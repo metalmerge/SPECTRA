@@ -67,7 +67,7 @@
                                             <i class="fas fa-upload"></i>
                                         </span>
                                         <span class="file-label">
-                                            Choose a file...
+                                            <span id="file-upload-text">Choose a file...</span>
                                         </span>
                                     </span>
                                 </label>
@@ -78,57 +78,57 @@
                                 </div>
                             </div>
                         </form>
+                        <div id="result-text">
+                            <p id="initial-text">Upload an image to analyze.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="content has-text-centered">
-            </div>
-            <div class="columns is-centered">
-                <div class="column is-8">
-                    <div class="content">
-                        <p>
-                            Special thanks to <a href="https://keunhong.com/">Keunhong Park</a> for developing and
-                            open-sourcing part
-                            of this website code.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <!-- Footer content -->
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         $(document).ready(function () {
             // Handle form submission
             $('#image-upload-form').submit(function (event) {
-                // console.log('Form submitted');
                 event.preventDefault();
                 var formData = new FormData(this);
                 // Make an API request to analyze the image
-                // Replace 'YOUR_ANALYSIS_API_ENDPOINT' with the actual endpoint
-                $.ajax({
-                    url: 'YOUR_ANALYSIS_API_ENDPOINT',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (response) {
-                        // Create a new image element with the grayscale image data
-                        var grayscaleImage = document.createElement('img');
-                        grayscaleImage.src = response.data;  // Assuming the API response returns the grayscale image data in the 'data' field
-                        // Append the grayscale image to a container element on your page
-                        document.getElementById('image-container').appendChild(grayscaleImage);
-                    },
-                    error: function (error) {
-                        console.error(error);
-                    }
+                query(formData.get("image")).then((response) => {
+                    var result = response[0];
+                    var resultText = 'The image is most likely a ' + result.label + '.';
+                    $('#result-text').text(resultText);
+                }).catch((error) => {
+                    console.error(error);
                 });
             });
+
+            // Update file upload text when a file is selected
+            $('.file-input').change(function () {
+                var fileName = $(this).val().split('\\').pop();
+                if (fileName) {
+                    $('#file-upload-text').text(fileName);
+                } else {
+                    $('#file-upload-text').text('Choose a file...');
+                }
+            });
+
+            // Reference API function
+            async function query(data) {
+                const response = await fetch(
+                    "https://api-inference.huggingface.co/models/andrewgray11/autotrain-solar-panel-object-detection-50559120777",
+                    {
+                        headers: { Authorization: "Bearer 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" },
+                        method: "POST",
+                        body: data,
+                    }
+                );
+                const result = await response.json();
+                return result;
+            }
         });
     </script>
 </body>
