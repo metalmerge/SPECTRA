@@ -99,7 +99,7 @@
                 // Make an API request to analyze the image
                 query(formData.get("image")).then((response) => {
                     var result = response[0];
-                    var resultText = 'The image is most likely a ' + result.label + '.';
+                    var resultText = 'The image is most likely a ' + result.label + '.'; // result
                     $('#result-text').text(resultText);
                 }).catch((error) => {
                     console.error(error);
