@@ -33,12 +33,8 @@
             </div>
         </div>
     </nav>
-
-    <section class="section">
-        <div class="container is-max-desktop">
-            <div class="columns is-centered">
-                <div class="column is-8">
-                    <div class="content">
+<section class="hero">
+   
                         <h2>Uploader</h2>
                         <img id="uploadedImg">
                         <form enctype="multipart/form-data" method="POST" name="fileinfo">
@@ -46,17 +42,16 @@
                             <input type="file" name="file" required />
                             <input type="submit" value="Classify!" />
                         </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    
     </section>
 
+    <section class="result-text">
     <h2>Results</h2>
     <div id="loader" class="lds-dual-ring"></div>
     <div id="results" class="grid-container">
         <!-- Your Results content goes here -->
     </div>
+    </section>
 
     <footer>
         <!-- Your Footer content goes here -->
