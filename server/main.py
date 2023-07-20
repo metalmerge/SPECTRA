@@ -14,8 +14,8 @@ app = Flask(__name__)
 cors = CORS(app) #Request will get blocked otherwise on Localhost
 
 @app.route("/")
-def index():
-    return render_template("index.html")
+def upload():
+    return render_template("upload.html")
  
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
