@@ -1,10 +1,5 @@
-var form = document.forms.namedItem("fileinfo");
-var lastImage;
-
-/*
-For such a simple app I chose not to use a Framework like react, so it's plain vanilla JS.
-But it uses Axios for fetching data via HTTP from the server.
-*/
+let form = document.forms.namedItem("fileinfo");
+let lastImage;
 
 form.addEventListener('submit', function (ev) {
   ev.preventDefault()
@@ -12,12 +7,12 @@ form.addEventListener('submit', function (ev) {
   document.getElementById("loader").style.visibility = "visible";
   let formdata = new FormData(form);
 
-  var requestOptions = {
+  let requestOptions = {
     method: 'POST',
     body: formdata,
   };
 
-  var loc = window.location;
+  let loc = window.location;
 
   fetch(`${loc.protocol}//${loc.hostname}:${loc.port}/predict`, requestOptions)
     .then(response => response.text().then((result => {
@@ -34,17 +29,17 @@ form.addEventListener('change', function (ev) {
 })
 
 function DisplayResult(result) {
-  /*I have created some CSS classes to make this look half decent.*/
-  resultDiv = document.getElementById("results")
 
-  divContainer = document.createElement("div")
+  let resultDiv = document.getElementById("results")
+
+  let divContainer = document.createElement("div")
   divContainer.className = "result"
 
-  divImage = document.createElement("div")
+  let divImage = document.createElement("div")
   divImage.className = "image"
   divImage.style.backgroundImage = "url('" + lastImage + "')";
-
-  divText = document.createElement("div")
+  
+  let divText = document.createElement("div")
   divText.appendChild(document.createTextNode(result))
   divText.className = "text"
 
