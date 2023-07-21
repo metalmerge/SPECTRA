@@ -15,7 +15,7 @@ transform = transforms.Compose([
 ])
 print(transform)
 # Load the dataset
-data_path = "/Users/dimaermakov/SPECTRA/Faulty_solar_panel_no_desktop"
+data_path = "/Users/dimaermakov/Faulty_solar_panel_no_desktop"
 train_dataset = datasets.ImageFolder(data_path, transform=transform)
 
 # Create data loaders
@@ -77,4 +77,4 @@ for epoch in range(num_epochs):
             running_loss = 0.0
 
 # Save the trained model
-torch.save(model.state_dict(), "/Users/dimaermakov/SPECTRA/")
+torch.save(model.state_dict(), "/Users/dimaermakov/")
