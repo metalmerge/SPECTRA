@@ -36,13 +36,13 @@ class SimpleCNN(nn.Module):
 
 
 # Load the saved model
-data_path = "/Users/dimaermakov/Faulty_solar_panel_no_desktop"
+data_path = "/Users/dimaermakov/Downloads/solar-Panel-Dataset"
 train_dataset = datasets.ImageFolder(data_path, transform=transform)
 num_classes = len(train_dataset.classes)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = SimpleCNN(num_classes).to(device)
-model.load_state_dict(torch.load("/Users/dimaermakov/Downloads/model.pth"))
+model.load_state_dict(torch.load("/Users/dimaermakov/SPECTRA/model.pth"))
 model.eval()  # Set the model to evaluation mode
 
 # Function to predict the class of an input image
@@ -57,6 +57,6 @@ def predict_image(image_path):
     return class_name
 
 # Example usage
-image_path = "/Users/dimaermakov/Downloads/image.jpeg"  # Replace with the path to your input image
+image_path = "/Users/dimaermakov/SPECTRA/example.jpeg"  # Replace with the path to your input image
 predicted_class = predict_image(image_path)
 print("Predicted class:", predicted_class)
