@@ -83,6 +83,6 @@ def predict_image(image_path):
     return class_name
 
 # Example usage
-image_path = "/Users/dimaermakov/SPECTRA/example.jpeg"  # Replace with the path to your input image
+image_path = "/Users/dimaermakov/Downloads/example1.jpeg"  # Replace with the path to your input image
 predicted_class = predict_image(image_path)
 print("Predicted class:", predicted_class)
