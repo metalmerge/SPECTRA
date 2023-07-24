@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask import render_template
 from fastai.vision.all import load_learner, PILImage
 from pathlib import Path
+from trainer import predict_image
 import torch
 
 #Labeling function required for load_learner to work
