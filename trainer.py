@@ -1,3 +1,4 @@
+#estimated completion time: 2 hours 30 minutes
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -6,6 +7,10 @@ from torch.utils.data import DataLoader
 from PIL import Image
 import ssl
 import torch.optim.lr_scheduler as lr_scheduler
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
 
 ssl._create_default_https_context = ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -25,7 +30,8 @@ transform = transforms.Compose([
 ])
 
 # Load the dataset
-data_path = "/Users/dimaermakov/solar-Panel-Dataset"
+# data_path = "/Users/dimaermakov/solar-Panel-Dataset"
+data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel"
 train_dataset = datasets.ImageFolder(data_path, transform=transform)
 
 # Create data loaders
@@ -50,8 +56,14 @@ step_size = 5  # Reduce the learning rate every 5 epochs
 gamma = 0.1    # Reduce the learning rate by a factor of 0.1
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
+# Create a confusion matrix
+true_labels = train_dataset.targets
+predicted_labels = []
+
 # Training loop
+false_positive_filenames = []
 false_positives = []
+
 num_epochs = 20 # 10 or 20 bigger better
 for epoch in range(num_epochs):
     model.train()
@@ -65,38 +77,23 @@ for epoch in range(num_epochs):
         optimizer.step()
         running_loss += loss.item()
 
-        # Check for false positives during training
         with torch.no_grad():
             model.eval()
             predicted_classes = torch.argmax(outputs, dim=1)
             false_positive_mask = (predicted_classes != labels)
-            false_positive_indices = (batch_idx * batch_size) + torch.nonzero(false_positive_mask).squeeze()
+            false_positive_indices = (batch_idx * batch_size) + torch.nonzero(false_positive_mask).flatten()
+            false_positives.extend(false_positive_indices.cpu().numpy().tolist())
             model.train()
 
-            # Check if false_positive_indices is not an integer
-            # if not isinstance(false_positive_indices, int):
-            #     false_positives.extend(false_positive_indices.cpu().numpy().tolist())
-            #     # Print filenames of false positive images
-            #     if epoch > 8:
-            #         if false_positive_indices.numel() > 1:
-            #             for idx in false_positive_indices.cpu().numpy().tolist():
-            #                 print("False positive image filename:", train_dataset.imgs[idx][0])
-            #         else:
-            #             print("False positive image filename:", train_dataset.imgs[false_positive_indices.item()][0])
+            # Print filenames of false positive images
+            for idx in false_positive_indices.cpu().numpy().tolist():
+                false_positive_filenames.append(train_dataset.imgs[idx][0])
 
         # Print progress every 5 batches
-        if batch_idx % 5 == 4:
-            print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {running_loss / 5:.4f}")
-            running_loss = 0.0
+        # if batch_idx % 5 == 4:
+        print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {running_loss / 5:.4f}")
+        running_loss = 0.0
     scheduler.step()
-
-# Save the trained model
-save_model = input("Do you want to save the trained model? (y/n): ").lower()
-if save_model == "y":
-    torch.save(model.state_dict(), "/Users/dimaermakov/model.pth")
-    print("Model saved successfully.")
-else:
-    print("Model not saved.")
 
 # Function to predict the class of an input image
 def predict_image(image_path):
@@ -109,16 +106,59 @@ def predict_image(image_path):
         class_index = predicted_class.item()
         class_name = train_dataset.classes[class_index]
     return class_name
-# def get_false_positive_images(dataset, false_positive_indices):
-#     false_positive_images = [dataset[idx][0] for idx in false_positive_indices]
-#     return false_positive_images
-
 
 # Example usage
-# false_positive_images = get_false_positive_images(train_dataset, false_positives)
+model.eval()
+predicted_labels = []
+with torch.no_grad():
+    for inputs, labels in train_loader:
+        inputs = inputs.to(device)
+        outputs = model(inputs)
+        _, predicted_classes = torch.max(outputs, 1)
+        predicted_labels.extend(predicted_classes.cpu().numpy().tolist())
 
-# Example usage
-# print("Number of false positive images during training:", len(false_positive_images))
-# image_path = "/Users/dimaermakov/Downloads/solar-Panel-Dataset/Clean/spotless-and-chemical-free-solar-panel-cleaning.jpg"
-# predicted_class = predict_image(image_path)
-# print("Predicted class:", predicted_class)
+true_labels = np.array(true_labels)
+predicted_labels = np.array(predicted_labels)
+
+# Calculate the confusion matrix
+conf_matrix = confusion_matrix(true_labels, predicted_labels)
+
+# Display the confusion matrix as a heatmap
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=train_dataset.classes, yticklabels=train_dataset.classes)
+plt.xlabel("Predicted")
+plt.ylabel("True")
+plt.title("Confusion Matrix")
+plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
+plt.show()
+
+# Display the images of false positives
+num_images_to_display = 5
+plt.figure(figsize=(12, 6))
+for i, idx in enumerate(false_positives[:num_images_to_display]):
+    image_path = train_dataset.imgs[idx][0]
+    image = Image.open(image_path)
+    plt.subplot(1, num_images_to_display, i + 1)
+    plt.imshow(image)
+    plt.axis("off")
+    plt.title(f"False Positive {i+1}")
+plt.savefig("/Users/dimaermakov/SPECTRA/server/static/false_positive_images.png")
+plt.show()
+
+
+image_path = "/Users/dimaermakov/solar-Panel-Dataset/Clean/example1.jpeg"
+predicted_class = predict_image(image_path)
+print("Predicted class:", predicted_class)
+
+# Print the list of false positive filenames
+# print("Filenames of False Positive Images:")
+# for filename in false_positive_filenames:
+#     print(filename)
+
+# Save the trained model
+save_model = input("Do you want to save the trained model? (y/n): ").lower()
+if save_model == "y":
+    torch.save(model.state_dict(), "/Users/dimaermakov/model.pth")
+    print("Model saved successfully.")
+else:
+    print("Model not saved.")
