@@ -4,6 +4,8 @@ import torch.optim as optim
 from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
 from PIL import Image
+import ssl
+ssl._create_default_https_context = ssl._create_default_https_context = ssl._create_unverified_context
 
 # Set the device (GPU or CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -15,26 +17,17 @@ transform = transforms.Compose([
     transforms.ToTensor(),         # Convert images to tensors
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize image values
 ])
-print(transform)
 
 # Load the dataset
-data_path = "/Users/dimaermakov/Downloads/solar-Panel-Dataset"
+data_path = "/Users/dimaermakov/solar-Panel-Dataset"
 train_dataset = datasets.ImageFolder(data_path, transform=transform)
 
 # Create data loaders
-batch_size = 16   # Decrease batch size for slower computers
+batch_size = 16
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-
-# Define the path to the locally downloaded pre-trained weights
-local_weights_path = "/Users/dimaermakov/SPECTRA/resnet18-f37072fd.pth"
-
-# Load the base model (ResNet18) with the pre-trained weights
-base_model = models.resnet18(pretrained=False)
-base_model.load_state_dict(torch.load(local_weights_path))
-
-
-# Replace the fully connected layer (classifier) with a new one for our task
+# Load the base model (ResNet50) with the pre-trained weights using the 'weights' parameter
+base_model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
 num_classes = len(train_dataset.classes)
 in_features = base_model.fc.in_features
 base_model.fc = nn.Linear(in_features, num_classes)
@@ -44,12 +37,12 @@ model = base_model.to(device)
 
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-learning_rate = 0.001   # Use a relatively larger learning rate for fine-tuning
+learning_rate = 0.001
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Training loop
+false_positives = []
 num_epochs = 10   # Increase the number of epochs for better accuracy
-print(num_epochs)
 for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
@@ -62,13 +55,32 @@ for epoch in range(num_epochs):
         optimizer.step()
         running_loss += loss.item()
 
-        # Print progress every 50 batches
-        if batch_idx % 5 == 49:
-            print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {running_loss / 50:.4f}")
+        # Check for false positives during training
+        with torch.no_grad():
+            model.eval()
+            predicted_classes = torch.argmax(outputs, dim=1)
+            false_positive_mask = (predicted_classes != labels)
+            false_positive_indices = (batch_idx * batch_size) + torch.nonzero(false_positive_mask).squeeze()
+            false_positives.extend(false_positive_indices.cpu().numpy().tolist())
+            model.train()
+
+            # Print filenames of false positive images
+            if(num_epochs > 8):
+                for idx in false_positive_indices.cpu().numpy().tolist():
+                    print("False positive image filename:", train_dataset.imgs[idx][0])
+
+        # Print progress every 5 batches
+        if batch_idx % 5 == 4:
+            print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {running_loss / 5:.4f}")
             running_loss = 0.0
 
 # Save the trained model
-torch.save(model.state_dict(), "/Users/dimaermakov/SPECTRA/model.pth")
+save_model = input("Do you want to save the trained model? (y/n): ").lower()
+if save_model == "y":
+    torch.save(model.state_dict(), "/Users/dimaermakov/model.pth")
+    print("Model saved successfully.")
+else:
+    print("Model not saved.")
 
 # Function to predict the class of an input image
 def predict_image(image_path):
@@ -81,8 +93,16 @@ def predict_image(image_path):
         class_index = predicted_class.item()
         class_name = train_dataset.classes[class_index]
     return class_name
+def get_false_positive_images(dataset, false_positive_indices):
+    false_positive_images = [dataset[idx][0] for idx in false_positive_indices]
+    return false_positive_images
+
 
 # Example usage
-image_path = "/Users/dimaermakov/Downloads/solar-Panel-Dataset/Clean/example1.jpeg"  # Replace with the path to your input image
+false_positive_images = get_false_positive_images(train_dataset, false_positives)
+
+# Example usage
+print("Number of false positive images during training:", len(false_positive_images))
+image_path = "/Users/dimaermakov/Downloads/solar-Panel-Dataset/Clean/spotless-and-chemical-free-solar-panel-cleaning.jpg"
 predicted_class = predict_image(image_path)
 print("Predicted class:", predicted_class)
