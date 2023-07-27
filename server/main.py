@@ -18,11 +18,11 @@ transform = transforms.Compose([
 ])
 
 # Load the trained model
-model = models.resnet18(pretrained=False)
+model = models.resnet50(pretrained=False)
 num_classes = 6  # Replace this with the number of classes in your dataset
 in_features = model.fc.in_features
 model.fc = nn.Linear(in_features, num_classes)
-model.load_state_dict(torch.load("/Users/dimaermakov/SPECTRA/model.pth"))
+model.load_state_dict(torch.load("/Users/dimaermakov/model.pth", map_location=device))
 model.to(device)
 model.eval()
 

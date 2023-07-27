@@ -144,36 +144,39 @@ if save_model == "y":
     torch.save(model.state_dict(), "/Users/dimaermakov/model.pth")
     print("Model saved successfully.")
 
-    plt.figure()
-    plt.plot(range(1, num_epochs + 1), accuracies, marker='o')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy vs. Epoch')
-    plt.grid()
-    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/accuracy_plot.png")
-    plt.show()
+plt.figure()
+plt.plot(range(1, num_epochs + 1), accuracies, marker='o')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Accuracy vs. Epoch')
+plt.grid()
+plt.savefig("/Users/dimaermakov/SPECTRA/server/static/accuracy_plot.png")
+plt.show()
 
+model.eval()
+predicted_labels = []
+with torch.no_grad():
+    for inputs, labels in train_loader:
+        inputs = inputs.to(device)
+        outputs = model(inputs)
+        _, predicted_classes = torch.max(outputs, 1)
+        predicted_labels.extend(predicted_classes.cpu().numpy().tolist())
 
-    model.eval()
-    predicted_labels = []
-    with torch.no_grad():
-        for inputs, labels in train_loader:
-            inputs = inputs.to(device)
-            outputs = model(inputs)
-            _, predicted_classes = torch.max(outputs, 1)
-            predicted_labels.extend(predicted_classes.cpu().numpy().tolist())
+true_labels = np.array(true_labels)
+predicted_labels = np.array(predicted_labels)
 
-    true_labels = np.array(true_labels)
-    predicted_labels = np.array(predicted_labels)
+# Calculate the confusion matrix
+conf_matrix = confusion_matrix(true_labels, predicted_labels)
 
-    # Calculate the confusion matrix
-    conf_matrix = confusion_matrix(true_labels, predicted_labels)
+# Display the confusion matrix as a heatmap
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=train_dataset.classes, yticklabels=train_dataset.classes)
+plt.xlabel("Predicted")
+plt.ylabel("True")
+plt.title("Confusion Matrix")
+plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
+plt.show()
 
-    # Display the confusion matrix as a heatmap
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=train_dataset.classes, yticklabels=train_dataset.classes)
-    plt.xlabel("Predicted")
-    plt.ylabel("True")
-    plt.title("Confusion Matrix")
-    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
-    plt.show()
+image_path = "/Users/dimaermakov/solar-Panel-Dataset/Clean/example1.jpeg"
+predicted_class = predict_image(image_path)
+print("Predicted class:", predicted_class)
