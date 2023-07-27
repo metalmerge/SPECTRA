@@ -35,7 +35,7 @@ data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel"
 train_dataset = datasets.ImageFolder(data_path, transform=transform)
 
 # Create data loaders
-batch_size = 16 #8 or 16 bigger better
+batch_size = 4 #8 or 16 bigger better
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 # Load the base model (ResNet50) with the pre-trained weights using the 'weights' parameter
@@ -49,7 +49,7 @@ model = base_model.to(device)
 
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-learning_rate = .0001 #0.001 or 0.0001 lower better
+learning_rate = .001 #0.001 or 0.0001 lower better
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 step_size = 5  # Reduce the learning rate every 5 epochs
@@ -63,11 +63,15 @@ predicted_labels = []
 # Training loop
 false_positive_filenames = []
 false_positives = []
+accuracies = []
+running_losses = []
 
-num_epochs = 20 # 10 or 20 bigger better
+num_epochs = 3 # 10 or 20 bigger better
 for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
+    correct = 0
+    total = 0
     for batch_idx, (inputs, labels) in enumerate(train_loader):
         inputs, labels = inputs.to(device), labels.to(device)
         optimizer.zero_grad()
@@ -77,6 +81,10 @@ for epoch in range(num_epochs):
         optimizer.step()
         running_loss += loss.item()
 
+        # Calculate accuracy
+        _, predicted_classes = torch.max(outputs, 1)
+        total += labels.size(0)
+        correct += (predicted_classes == labels).sum().item()
         with torch.no_grad():
             model.eval()
             predicted_classes = torch.argmax(outputs, dim=1)
@@ -93,6 +101,9 @@ for epoch in range(num_epochs):
         # if batch_idx % 5 == 4:
         print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {running_loss / 5:.4f}")
         running_loss = 0.0
+    epoch_accuracy = 100 * correct / total
+    accuracies.append(epoch_accuracy)
+    running_losses.append(running_loss / len(train_loader))
     scheduler.step()
 
 # Function to predict the class of an input image
@@ -129,7 +140,9 @@ sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=train_da
 plt.xlabel("Predicted")
 plt.ylabel("True")
 plt.title("Confusion Matrix")
-plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
+save_model = input("Do you want to save the confusion matrix? (y/n): ").lower()
+if save_model == "y":
+    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
 plt.show()
 
 # Display the images of false positives
@@ -142,9 +155,21 @@ for i, idx in enumerate(false_positives[:num_images_to_display]):
     plt.imshow(image)
     plt.axis("off")
     plt.title(f"False Positive {i+1}")
-plt.savefig("/Users/dimaermakov/SPECTRA/server/static/false_positive_images.png")
+save_model = input("Do you want to save the false positive images? (y/n): ").lower()
+if save_model == "y":
+    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/false_positive_images.png")
 plt.show()
 
+plt.figure()
+plt.plot(range(1, num_epochs + 1), accuracies, marker='o')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Accuracy vs. Epoch')
+plt.grid()
+save_model = input("Do you want to save the accuracy graph? (y/n): ").lower()
+if save_model == "y":
+    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/accuracy_plot.png")
+plt.show()
 
 image_path = "/Users/dimaermakov/solar-Panel-Dataset/Clean/example1.jpeg"
 predicted_class = predict_image(image_path)
