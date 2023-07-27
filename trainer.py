@@ -150,7 +150,9 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.title('Accuracy vs. Epoch')
 plt.grid()
-plt.savefig("/Users/dimaermakov/SPECTRA/server/static/accuracy_plot.png")
+save_model = input("Do you want to save the trained model? (y/n): ").lower()
+if save_model == "y":
+    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/accuracy_plot.png")
 plt.show()
 
 model.eval()
@@ -174,5 +176,7 @@ sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=train_da
 plt.xlabel("Predicted")
 plt.ylabel("True")
 plt.title("Confusion Matrix")
-plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
+save_model = input("Do you want to save the trained model? (y/n): ").lower()
+if save_model == "y":
+    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
 plt.show()
