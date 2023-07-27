@@ -44,6 +44,35 @@ base_model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
 num_classes = len(train_dataset.classes)
 in_features = base_model.fc.in_features
 base_model.fc = nn.Linear(in_features, num_classes)
+def initialize_weights(model, initialization_method='default'):
+    if initialization_method == 'default':
+        return  # Use default PyTorch initialization
+    elif initialization_method == 'xavier':
+        initialize_xavier_weights(model)
+    elif initialization_method == 'he':
+        initialize_he_weights(model)
+    else:
+        raise ValueError(f"Invalid initialization method: {initialization_method}")
+
+# Function to initialize weights with Xavier method
+def initialize_xavier_weights(model):
+    for m in model.modules():
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+            nn.init.xavier_normal_(m.weight)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+
+# Function to initialize weights with He method
+def initialize_he_weights(model):
+    for m in model.modules():
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+
+# Choose the weight initialization method ('default', 'xavier', 'he')
+weight_initialization_method = 'he'
+initialize_weights(base_model, weight_initialization_method)
 
 # Move the model to the device (GPU or CPU)
 model = base_model.to(device)
@@ -80,15 +109,11 @@ predicted_labels = []
 # Training loop
 accuracies = []
 running_losses = []
-
-num_epochs = 20  # 10 or 20, bigger is better
-print("Training started...")
-for epoch in range(num_epochs):
+def train_epoch(model, train_loader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
     correct = 0
     total = 0
-    epoch_loss = running_loss / len(train_loader)
     for batch_idx, (inputs, labels) in enumerate(train_loader):
         inputs, labels = inputs.to(device), labels.to(device)
         optimizer.zero_grad()
@@ -104,25 +129,54 @@ for epoch in range(num_epochs):
         correct += (predicted_classes == labels).sum().item()
         print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}, Accuracy: {(correct / total) * 100:.2f}%")
 
-    # val_loss = calculate_validation_loss(model, criterion, val_loader, device)
+    return running_loss
+
+# Function to evaluate one epoch
+def evaluate_epoch(model, val_loader, criterion, device):
+    model.eval()
+    val_loss = 0.0
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for inputs, labels in val_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            val_loss += loss.item()
+
+            # Calculate accuracy
+            _, predicted_classes = torch.max(outputs, 1)
+            total += labels.size(0)
+            correct += (predicted_classes == labels).sum().item()
+
+    epoch_loss = val_loss / len(val_loader)
     epoch_accuracy = 100 * correct / total
+    return epoch_loss, epoch_accuracy
+
+
+num_epochs = 20  # 10 or 20, bigger is better
+print("Training started...")
+for epoch in range(num_epochs):
+    running_loss = train_epoch(model, train_loader, criterion, optimizer, device)
+    val_loss, epoch_accuracy = evaluate_epoch(model, val_loader, criterion, device)
     accuracies.append(epoch_accuracy)
     running_losses.append(running_loss / len(train_loader))
 
-    print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%")
+    print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss:.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%")
 
-    # if val_loss < best_val_loss:
-    #     best_val_loss = val_loss
-    #     counter = 0
-    # else:
-    #     counter += 1
-    #     if counter >= patience:
-    #         print(f"Early stopping: No improvement for {patience} epochs.")
-    #         num_epochs = epoch + 1
-    #         break
+    if val_loss < best_val_loss:
+        best_val_loss = val_loss
+        counter = 0
+    else:
+        counter += 1
+        if counter >= patience:
+            print(f"Early stopping: No improvement for {patience} epochs.")
+            num_epochs = epoch + 1
+            break
 
-    running_loss = 0.0
     scheduler.step()
+
+# Function to perform one epoch of training
 
 # Function to predict the class of an input image
 def predict_image(image_path):
@@ -176,7 +230,3 @@ plt.ylabel("True")
 plt.title("Confusion Matrix")
 plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
 plt.show()
-
-image_path = "/Users/dimaermakov/solar-Panel-Dataset/Clean/example1.jpeg"
-predicted_class = predict_image(image_path)
-print("Predicted class:", predicted_class)
