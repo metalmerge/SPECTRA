@@ -104,22 +104,22 @@ for epoch in range(num_epochs):
         correct += (predicted_classes == labels).sum().item()
         print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}, Accuracy: {(correct / total) * 100:.2f}%")
 
-    val_loss = calculate_validation_loss(model, criterion, val_loader, device)
+    # val_loss = calculate_validation_loss(model, criterion, val_loader, device)
     epoch_accuracy = 100 * correct / total
     accuracies.append(epoch_accuracy)
     running_losses.append(running_loss / len(train_loader))
 
     print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%")
 
-    if val_loss < best_val_loss:
-        best_val_loss = val_loss
-        counter = 0
-    else:
-        counter += 1
-        if counter >= patience:
-            print(f"Early stopping: No improvement for {patience} epochs.")
-            num_epochs = epoch + 1
-            break
+    # if val_loss < best_val_loss:
+    #     best_val_loss = val_loss
+    #     counter = 0
+    # else:
+    #     counter += 1
+    #     if counter >= patience:
+    #         print(f"Early stopping: No improvement for {patience} epochs.")
+    #         num_epochs = epoch + 1
+    #         break
 
     running_loss = 0.0
     scheduler.step()
