@@ -153,7 +153,6 @@ plt.grid()
 plt.savefig("/Users/dimaermakov/SPECTRA/server/static/accuracy_plot.png")
 plt.show()
 
-
 model.eval()
 predicted_labels = []
 with torch.no_grad():
