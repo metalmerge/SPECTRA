@@ -1,4 +1,4 @@
-#estimated completion time: 2 hours 30 minutes
+# estimated training time: 2 hours
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -16,7 +16,6 @@ ssl._create_default_https_context = ssl._create_default_https_context = ssl._cre
 
 # Set the device (GPU or CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(device)
 
 # Define data transformations
 transform = transforms.Compose([
@@ -30,13 +29,15 @@ transform = transforms.Compose([
 ])
 
 # Load the dataset
-# data_path = "/Users/dimaermakov/solar-Panel-Dataset"
-data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel"
+data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Train"
 train_dataset = datasets.ImageFolder(data_path, transform=transform)
+val_data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Validation"
+val_dataset = datasets.ImageFolder(val_data_path, transform=transform)
 
 # Create data loaders
-batch_size = 4 #8 or 16 bigger better
+batch_size = 20  # 8 or 16, bigger is better
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 # Load the base model (ResNet50) with the pre-trained weights using the 'weights' parameter
 base_model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
@@ -49,29 +50,45 @@ model = base_model.to(device)
 
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-learning_rate = .001 #0.001 or 0.0001 lower better
+learning_rate = 0.0001  # 0.001 or 0.0001, lower is better
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
+
+def calculate_validation_loss(model, criterion, val_loader, device):
+    model.eval()
+    val_loss = 0.0
+    with torch.no_grad():
+        for inputs, labels in val_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            val_loss += loss.item()
+    return val_loss / len(val_loader)
+
+
 step_size = 5  # Reduce the learning rate every 5 epochs
-gamma = 0.1    # Reduce the learning rate by a factor of 0.1
+gamma = 0.1  # Reduce the learning rate by a factor of 0.1
 scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+patience = 5  # Number of epochs to wait for improvement before stopping
+best_val_loss = float('inf')
+counter = 0
 
 # Create a confusion matrix
 true_labels = train_dataset.targets
 predicted_labels = []
 
 # Training loop
-false_positive_filenames = []
-false_positives = []
 accuracies = []
 running_losses = []
 
-num_epochs = 3 # 10 or 20 bigger better
+num_epochs = 20  # 10 or 20, bigger is better
+print("Training started...")
 for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
     correct = 0
     total = 0
+    epoch_loss = running_loss / len(train_loader)
     for batch_idx, (inputs, labels) in enumerate(train_loader):
         inputs, labels = inputs.to(device), labels.to(device)
         optimizer.zero_grad()
@@ -85,25 +102,26 @@ for epoch in range(num_epochs):
         _, predicted_classes = torch.max(outputs, 1)
         total += labels.size(0)
         correct += (predicted_classes == labels).sum().item()
-        with torch.no_grad():
-            model.eval()
-            predicted_classes = torch.argmax(outputs, dim=1)
-            false_positive_mask = (predicted_classes != labels)
-            false_positive_indices = (batch_idx * batch_size) + torch.nonzero(false_positive_mask).flatten()
-            false_positives.extend(false_positive_indices.cpu().numpy().tolist())
-            model.train()
+        print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}, Accuracy: {(correct / total) * 100:.2f}%")
 
-            # Print filenames of false positive images
-            for idx in false_positive_indices.cpu().numpy().tolist():
-                false_positive_filenames.append(train_dataset.imgs[idx][0])
-
-        # Print progress every 5 batches
-        # if batch_idx % 5 == 4:
-        print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {running_loss / 5:.4f}")
-        running_loss = 0.0
+    val_loss = calculate_validation_loss(model, criterion, val_loader, device)
     epoch_accuracy = 100 * correct / total
     accuracies.append(epoch_accuracy)
     running_losses.append(running_loss / len(train_loader))
+
+    print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%")
+
+    if val_loss < best_val_loss:
+        best_val_loss = val_loss
+        counter = 0
+    else:
+        counter += 1
+        if counter >= patience:
+            print(f"Early stopping: No improvement for {patience} epochs.")
+            num_epochs = epoch + 1
+            break
+
+    running_loss = 0.0
     scheduler.step()
 
 # Function to predict the class of an input image
@@ -118,72 +136,48 @@ def predict_image(image_path):
         class_name = train_dataset.classes[class_index]
     return class_name
 
+
 # Example usage
-model.eval()
-predicted_labels = []
-with torch.no_grad():
-    for inputs, labels in train_loader:
-        inputs = inputs.to(device)
-        outputs = model(inputs)
-        _, predicted_classes = torch.max(outputs, 1)
-        predicted_labels.extend(predicted_classes.cpu().numpy().tolist())
 
-true_labels = np.array(true_labels)
-predicted_labels = np.array(predicted_labels)
-
-# Calculate the confusion matrix
-conf_matrix = confusion_matrix(true_labels, predicted_labels)
-
-# Display the confusion matrix as a heatmap
-plt.figure(figsize=(8, 6))
-sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=train_dataset.classes, yticklabels=train_dataset.classes)
-plt.xlabel("Predicted")
-plt.ylabel("True")
-plt.title("Confusion Matrix")
-save_model = input("Do you want to save the confusion matrix? (y/n): ").lower()
-if save_model == "y":
-    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
-plt.show()
-
-# Display the images of false positives
-num_images_to_display = 5
-plt.figure(figsize=(12, 6))
-for i, idx in enumerate(false_positives[:num_images_to_display]):
-    image_path = train_dataset.imgs[idx][0]
-    image = Image.open(image_path)
-    plt.subplot(1, num_images_to_display, i + 1)
-    plt.imshow(image)
-    plt.axis("off")
-    plt.title(f"False Positive {i+1}")
-save_model = input("Do you want to save the false positive images? (y/n): ").lower()
-if save_model == "y":
-    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/false_positive_images.png")
-plt.show()
-
-plt.figure()
-plt.plot(range(1, num_epochs + 1), accuracies, marker='o')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.title('Accuracy vs. Epoch')
-plt.grid()
-save_model = input("Do you want to save the accuracy graph? (y/n): ").lower()
-if save_model == "y":
-    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/accuracy_plot.png")
-plt.show()
-
-image_path = "/Users/dimaermakov/solar-Panel-Dataset/Clean/example1.jpeg"
-predicted_class = predict_image(image_path)
-print("Predicted class:", predicted_class)
-
-# Print the list of false positive filenames
-# print("Filenames of False Positive Images:")
-# for filename in false_positive_filenames:
-#     print(filename)
-
-# Save the trained model
 save_model = input("Do you want to save the trained model? (y/n): ").lower()
 if save_model == "y":
     torch.save(model.state_dict(), "/Users/dimaermakov/model.pth")
     print("Model saved successfully.")
-else:
-    print("Model not saved.")
+
+    plt.figure()
+    plt.plot(range(1, num_epochs + 1), accuracies, marker='o')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy vs. Epoch')
+    plt.grid()
+    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/accuracy_plot.png")
+    plt.show()
+
+
+    model.eval()
+    predicted_labels = []
+    with torch.no_grad():
+        for inputs, labels in train_loader:
+            inputs = inputs.to(device)
+            outputs = model(inputs)
+            _, predicted_classes = torch.max(outputs, 1)
+            predicted_labels.extend(predicted_classes.cpu().numpy().tolist())
+
+    true_labels = np.array(true_labels)
+    predicted_labels = np.array(predicted_labels)
+
+    # Calculate the confusion matrix
+    conf_matrix = confusion_matrix(true_labels, predicted_labels)
+
+    # Display the confusion matrix as a heatmap
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=train_dataset.classes, yticklabels=train_dataset.classes)
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.title("Confusion Matrix")
+    plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
+    plt.show()
+
+    image_path = "/Users/dimaermakov/solar-Panel-Dataset/Clean/example1.jpeg"
+    predicted_class = predict_image(image_path)
+    print("Predicted class:", predicted_class)
