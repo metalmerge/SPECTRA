@@ -178,6 +178,6 @@ if save_model == "y":
     plt.savefig("/Users/dimaermakov/SPECTRA/server/static/confusion_matrix.png")
     plt.show()
 
-    image_path = "/Users/dimaermakov/solar-Panel-Dataset/Clean/example1.jpeg"
-    predicted_class = predict_image(image_path)
-    print("Predicted class:", predicted_class)
+    # image_path = "/Users/dimaermakov/solar-Panel-Dataset/Clean/example1.jpeg"
+    # predicted_class = predict_image(image_path)
+    # print("Predicted class:", predicted_class)
