@@ -198,7 +198,7 @@ plt.legend(loc=0)
 # if save_model == "y":
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/training_accuracy_loss.png")
 
-plt.show()
+# plt.show()
 
 # Plot training and validation loss
 plt.figure()
@@ -214,7 +214,7 @@ plt.legend(loc=0)
 # if save_model == "y":
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/training_validation_loss.png")
 
-plt.show()
+# plt.show()
 
 plt.figure()
 plt.plot(range(1, num_epochs + 1), accuracies, marker='o')
@@ -225,7 +225,7 @@ plt.grid()
 # save_model = input("Do you want to save the accuracy_plot? (y/n): ").lower()
 # if save_model == "y":
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/accuracy_plot.png")
-plt.show()
+# plt.show()
 
 # Plot a grid of individual image examples
 class_names = ['Bird-drop', 'Clean', 'Dusty', 'Electrical-damage', 'Physical-Damage', 'Snow-Covered']
@@ -268,7 +268,7 @@ plt.tight_layout()
 # save_model = input("Do you want to save the image_examples? (y/n): ").lower()
 # if save_model == "y":
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/image_examples.png")
-plt.show()
+# plt.show()
 
 model.eval()
 predicted_labels = []
@@ -295,6 +295,6 @@ plt.title("Confusion Matrix")
 # save_model = input("Do you want to save the confusion_matrix? (y/n): ").lower()
 # if save_model == "y":
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/confusion_matrix.png")
-plt.show()
+# plt.show()
 
 os.system("sleep 5 && pmset sleepnow") # Put the computer to sleep after 5 seconds
