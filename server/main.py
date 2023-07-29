@@ -24,7 +24,7 @@ in_features = model.fc.in_features
 model.fc = nn.Linear(in_features, num_classes)
 
 final_train_accuracy = 0
-model_filename = f"/Users/dimaermakov/model_{final_train_accuracy:.2f}.pth"
+model_filename = f"/Users/dimaermakov/models_folder/model_{final_train_accuracy:.2f}.pth"
 model.load_state_dict(torch.load(model_filename, map_location=device))
 model.to(device)
 model.eval()

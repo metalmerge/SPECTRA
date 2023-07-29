@@ -1,5 +1,5 @@
 # Author: metalmerge
-# Estimated training time: 1-2 hours depending early stoping
+# Estimated training time: 136.62 minutes depending early stoping
 
 import os
 import ssl
@@ -15,10 +15,10 @@ from sklearn.metrics import confusion_matrix
 from torch.utils.data import DataLoader
 from PIL import Image
 
-num_epochs = 20  # 10 or 20, bigger is better
+num_epochs = 40  # 10 or 20, bigger is better
 learning_rate = .0001  # 0.001 or 0.0001, lower is better
 batch_size = 16  # 8 or 16, bigger is better
-weight_decay = 0.001  # Adjust this value based on your needs
+# weight_decay = 0.001  # Adjust this value based on your needs
 
 # Ignore SSL certificate errors for data download
 ssl._create_default_https_context = ssl._create_default_https_context = ssl._create_unverified_context
@@ -27,7 +27,7 @@ ssl._create_default_https_context = ssl._create_default_https_context = ssl._cre
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Define data transformations
-train_transform = transforms.Compose([
+transforms = transforms.Compose([
     transforms.RandomResizedCrop(224),   # Randomly crop and resize images
     transforms.RandomHorizontalFlip(),   # Randomly flip images horizontally
     transforms.RandomVerticalFlip(),     # Randomly flip images vertically
@@ -37,17 +37,12 @@ train_transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize image values
 ])
 
-val_transform = transforms.Compose([
-    transforms.Resize((224, 224)),  # Resize images to 224x224
-    transforms.ToTensor(),          # Convert images to tensors
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize image values
-])
 
 # Load the dataset
 data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Train"
-train_dataset = datasets.ImageFolder(data_path, transform=train_transform)
+train_dataset = datasets.ImageFolder(data_path, transform=transforms)
 val_data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Validation"
-val_dataset = datasets.ImageFolder(val_data_path, transform=val_transform)
+val_dataset = datasets.ImageFolder(val_data_path, transform=transforms)
 
 # Create data loaders
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -56,15 +51,16 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 num_classes = len(train_dataset.classes)
 
 # Download the ResNet-50 weights
-resnet50_weights = models.resnet50(pretrained=True)
+# resnet50_weights = models.resnet50(pretrained=True)
 
-# Save the weights to a file
-local_weights_path = "/Users/dimaermakov/SPECTRA/resnet50.pth"
-torch.save(resnet50_weights.state_dict(), local_weights_path)
+# local_weights_path = "/Users/dimaermakov/SPECTRA/resnet50.pth"
+# torch.save(resnet50_weights.state_dict(), local_weights_path)
 
 # Later, to load the saved weights
-base_model = models.resnet50()
-base_model.load_state_dict(torch.load(local_weights_path))
+# base_model = models.resnet50()
+# base_model.load_state_dict(torch.load(local_weights_path))
+
+base_model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
 
 # Fine-tune the model
 for param in base_model.parameters():
@@ -74,12 +70,10 @@ in_features = base_model.fc.in_features
 base_model.fc = nn.Linear(in_features, num_classes)
 model = base_model.to(device)
 
-# Move the model to the device (GPU or CPU)
-model = base_model.to(device)
-
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+# optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 def calculate_validation_loss(model, criterion, val_loader, device):
     model.eval()
@@ -123,10 +117,10 @@ for epoch in range(num_epochs):
         loss = criterion(outputs, labels)
         
         # Calculate L2 regularization term (optional, add to loss)
-        l2_regularization = 0.0
-        for param in model.parameters():
-            l2_regularization += torch.norm(param, 2)
-        loss += weight_decay * l2_regularization
+        # l2_regularization = 0.0
+        # for param in model.parameters():
+        #     l2_regularization += torch.norm(param, 2)
+        # loss += weight_decay * l2_regularization
         
         loss.backward()
         optimizer.step()
@@ -166,7 +160,7 @@ for epoch in range(num_epochs):
 def predict_image(image_path):
     model.eval()  # Set the model to evaluation mode
     image = Image.open(image_path)
-    image = val_transform(image).unsqueeze(0).to(device)  # Add batch dimension and move to the device
+    image = transforms(image).unsqueeze(0).to(device)  # Add batch dimension and move to the device
     with torch.no_grad():
         output = model(image)
         _, predicted_class = torch.max(output, 1)
@@ -175,11 +169,10 @@ def predict_image(image_path):
     return class_name
 
 # Example usage
-# save_model = input("Do you want to save the trained model? (y/n): ").lower()
-# if save_model == "y":
+
 final_train_accuracy = accuracies[-1]
-# model_filename = f"/Users/dimaermakov/model_{final_train_accuracy:.2f}.pth"
-model_filename = f"/Users/dimaermakov/night_model_{final_train_accuracy:.2f}.pth"
+model_filename = f"/Users/dimaermakov/models_folder/model_{final_train_accuracy:.2f}.pth"
+# model_filename = f"/Users/dimaermakov/night_model_{final_train_accuracy:.2f}.pth"
 torch.save(model.state_dict(), model_filename)
 print(f"Model saved successfully as {model_filename}.")
 # Plot training accuracy and loss
@@ -193,12 +186,10 @@ plt.xlabel('Epoch')
 plt.ylabel('Value')
 plt.legend(loc=0)
 
-# Save the plot if the user wants to
-# save_model = input("Do you want to save the training_accuracy_loss? (y/n): ").lower()
-# if save_model == "y":
+
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/training_accuracy_loss.png")
 
-# plt.show()
+
 
 # Plot training and validation loss
 plt.figure()
@@ -209,12 +200,8 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend(loc=0)
 
-# Save the plot if the user wants to
-# save_model = input("Do you want to save the training_validation_loss? (y/n): ").lower()
-# if save_model == "y":
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/training_validation_loss.png")
 
-# plt.show()
 
 plt.figure()
 plt.plot(range(1, num_epochs + 1), accuracies, marker='o')
@@ -222,10 +209,8 @@ plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.title('Accuracy vs. Epoch')
 plt.grid()
-# save_model = input("Do you want to save the accuracy_plot? (y/n): ").lower()
-# if save_model == "y":
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/accuracy_plot.png")
-# plt.show()
+
 
 # Plot a grid of individual image examples
 class_names = ['Bird-drop', 'Clean', 'Dusty', 'Electrical-damage', 'Physical-Damage', 'Snow-Covered']
@@ -265,10 +250,9 @@ for batch_idx, (images, labels) in enumerate(val_loader):
 
 plt.tight_layout()
 
-# save_model = input("Do you want to save the image_examples? (y/n): ").lower()
-# if save_model == "y":
+
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/image_examples.png")
-# plt.show()
+
 
 model.eval()
 predicted_labels = []
@@ -292,9 +276,6 @@ plt.xlabel("Predicted")
 plt.ylabel("True")
 plt.title("Confusion Matrix")
 
-# save_model = input("Do you want to save the confusion_matrix? (y/n): ").lower()
-# if save_model == "y":
 plt.savefig("/Users/dimaermakov/SPECTRA/server/training_images/confusion_matrix.png")
-# plt.show()
 
-os.system("sleep 5 && pmset sleepnow") # Put the computer to sleep after 5 seconds
+# os.system("sleep 5 && pmset sleepnow") # Put the computer to sleep after 5 seconds
