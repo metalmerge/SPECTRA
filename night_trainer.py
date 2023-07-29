@@ -152,7 +152,7 @@ for retrain_index in range(num_retrain):
     final_train_accuracy = accuracies[-1]
     if final_train_accuracy > best_accuracy:
         best_accuracy = final_train_accuracy
-        best_model_filename = f"/Users/dimaermakov/models_folder/old_model_{best_accuracy:.2f}.pth"
+        best_model_filename = f"/Users/dimaermakov/models_folder/night_model_{best_accuracy:.2f}.pth"
         torch.save(model.state_dict(), best_model_filename)
 
         # model_filename = f"/Users/dimaermakov/night_model_{final_train_accuracy:.2f}.pth"
