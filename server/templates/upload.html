@@ -35,13 +35,19 @@
             </div>
         </div>
     </nav>
+    <section class="uploaded-images-section">
+        <h2>Uploaded Images</h2>
+        <div id="uploadedImages" class="uploaded-images">
+            <!-- Uploaded images will be displayed here -->
+        </div>
+    </section>
+
     <section class="hero">
         <!-- Description of the website/project -->
         <h2>Uploader</h2>
-        <img id="uploadedImg" alt="">
         <form enctype="multipart/form-data" method="POST" name="fileinfo">
-            <label>Upload your image:</label>
-            <input type="file" name="file" required />
+            <label>Upload your images:</label>
+            <input type="file" name="file" required multiple />
             <input type="submit" value="Classify!" />
         </form>
     </section>
