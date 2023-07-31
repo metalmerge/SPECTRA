@@ -31,13 +31,17 @@ for retrain_index in range(num_retrain):
 
     # Define data transformations
     transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),   # Randomly crop and resize images
-        transforms.RandomHorizontalFlip(),   # Randomly flip images horizontally
-        transforms.RandomVerticalFlip(),     # Randomly flip images vertically
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # Randomly adjust color
-        transforms.RandomRotation(10),       # Randomly rotate images by up to 10 degrees
-        transforms.ToTensor(),               # Convert images to tensors
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize image values
+        transforms.RandomResizedCrop(224),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+        transforms.RandomRotation(10),
+        transforms.RandomGrayscale(p=0.2),  # Add random grayscale with probability 0.2
+        transforms.RandomPerspective(),  # Add random perspective transformation
+        transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.8, 1.2)),  # Random affine transformation
+        transforms.RandomCrop(224, padding=20),  # Random cropping with padding
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
     # Load the dataset
@@ -145,6 +149,7 @@ for retrain_index in range(num_retrain):
 
     # Function to predict the class of an input image
     end_time = time.time()
+    total_time = end_time - start_time / 60
     print(f"Training completed in {(end_time - start_time) / 60:.2f} minutes.")
 
     # Example usage
@@ -152,7 +157,7 @@ for retrain_index in range(num_retrain):
     final_train_accuracy = accuracies[-1]
     if final_train_accuracy > best_accuracy:
         best_accuracy = final_train_accuracy
-        best_model_filename = f"/Users/dimaermakov/models_folder/night_model_{best_accuracy:.2f}.pth"
+        best_model_filename = f"/Users/dimaermakov/models_folder/model_{best_accuracy:.2f}_{total_time:.2f}.pth"
         torch.save(model.state_dict(), best_model_filename)
 
         # model_filename = f"/Users/dimaermakov/night_model_{final_train_accuracy:.2f}.pth"
@@ -167,8 +172,8 @@ for retrain_index in range(num_retrain):
         plt.xlabel('Epoch')
         plt.ylabel('Value')
         plt.legend(loc=0)
-
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/training_accuracy_loss_{best_accuracy:.2f}.png")
+        plt.tight_layout()
+        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/training_accuracy_loss_{best_accuracy:.2f}_{total_time:.2f}.png")
 
         # Plot training and validation loss
         plt.figure()
@@ -178,8 +183,8 @@ for retrain_index in range(num_retrain):
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
         plt.legend(loc=0)
-
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/training_validation_loss_{best_accuracy:.2f}.png")
+        plt.tight_layout()
+        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/training_validation_loss_{best_accuracy:.2f}_{total_time:.2f}.png")
 
 
         plt.figure()
@@ -188,13 +193,14 @@ for retrain_index in range(num_retrain):
         plt.ylabel('Accuracy')
         plt.title('Accuracy vs. Epoch')
         plt.grid()
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/accuracy_plot_{best_accuracy:.2f}.png")
+        plt.tight_layout()
+        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/accuracy_plot_{best_accuracy:.2f}_{total_time:.2f}.png")
 
 
         # Plot a grid of individual image examples
         class_names = ['Bird-drop', 'Clean', 'Dusty', 'Electrical-damage', 'Physical-Damage', 'Snow-Covered']
 
-        num_examples = 16  # Number of image examples to show
+        num_examples = 32  # Number of image examples to show
         rows = int(np.ceil(num_examples / 4))
         plt.figure(figsize=(15, 15))
 
@@ -234,7 +240,7 @@ for retrain_index in range(num_retrain):
 
         plt.tight_layout()
 
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/image_examples_{best_accuracy:.2f}.png")
+        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/image_examples_{best_accuracy:.2f}_{total_time:.2f}.png")
 
         model.eval()
         predicted_labels = []
@@ -250,28 +256,15 @@ for retrain_index in range(num_retrain):
 
         # Calculate the confusion matrix
         conf_matrix = confusion_matrix(true_labels, predicted_labels)
-
-        # Display the confusion matrix as a heatmap
-        plt.figure(figsize=(8, 6))
+        plt.figure(figsize=(10, 8))
         sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=train_dataset.classes, yticklabels=train_dataset.classes)
         plt.xlabel("Predicted")
         plt.ylabel("True")
         plt.title("Confusion Matrix")
-
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/confusion_matrix_{best_accuracy:.2f}.png")
+        plt.tight_layout()
+        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/confusion_matrix_{best_accuracy:.2f}_{total_time:.2f}.png")
 
 print(f"Best model saved successfully as {best_model_filename}.")
 print(f"Best accuracy achieved: {best_accuracy:.2f}%.")
-os.system("sleep 5 && pmset sleepnow") # Put the computer to sleep after 5 seconds
-
-# Function to predict the class of an input image
-def predict_image(image_path):
-    image = Image.open(image_path)
-    image = transform(image).unsqueeze(0).to(device)  # Add batch dimension and move to the device
-    with torch.no_grad():
-        model.eval()  # Set the model to evaluation mode
-        output = model(image)
-        _, predicted_class = torch.max(output, 1)
-        class_index = predicted_class.item()
-        class_name = train_dataset.classes[class_index]
-    return class_name
+if num_retrain > 1:
+    os.system("sleep 5 && pmset sleepnow") # Put the computer to sleep after 5 seconds
