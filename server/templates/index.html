@@ -2,121 +2,78 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="description"
-    content="SPECTRA: Solar Panel Evaluation through Computer Vision and Advanced Techniques for Reliable Analysis">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SPECTRA: Solar Panel Evaluation</title>
-
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPECTRA: Solar Panel Evaluation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='SPECTRA_icon.png') }}">
 </head>
 
 <body>
-
-  <section class="hero">
-    <div class="hero-body">
-      <div class="container is-max-desktop">
-        <div class="columns is-centered">
-          <div class="column has-text-centered">
-            <h1 class="title is-1 publication-title">SPECTRA</h1>
-            <div class="is-size-5 publication-authors">
-              <span class="author-block">
-                <a href="https://github.com/metalmerge">Dimitry Ermakov</a>
-              </span>
-            </div>
-            <div class="row">
-              <h2>Uploader</h2>
-          </div>
-          <div class="row">
-              <img id="uploadedImg">
-          </div>
-  
-          <div class="row">
-              <form enctype="multipart/form-data" method="POST" name="fileinfo">
-                  <label>Upload your image:</label>
-                  <input type="file" name="file" required />
-                  <input type="submit" value="Classify!" />
-              </form>
-      
-          </div>
-          <div class="row">
-     
-              <h2>Results</h2>
-              <div id="loader" class="lds-dual-ring"></div>
-          </div>
-          <div id="results" class="grid-container">
-          </div>  
-
-            <div class="is-size-5 publication-authors">
-              <span class="author-block">FirstEnergy</span>
-            </div>
-
-            <div class="column has-text-centered">
-              <div class="publication-links">
-
-                <!-- Code Link -->
-                <span class="link-block">
-                  <a href="https://github.com/metalmerge/SPECTRA" class="external-link button is-normal is-rounded is-dark">
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+        <div class="navbar-menu">
+            <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+                <a class="navbar-item" href="index.html">
                     <span class="icon">
-                      <i class="fab fa-github"></i>
+                        <i class="fas fa-home"></i>
                     </span>
-                    <span>Code</span>
-                  </a>
-                </span>
-              </div>
-
+                </a>
+                <a class="navbar-item" href="upload.html">
+                    <span class="icon">
+                        <i class="fas fa-flask"></i>
+                    </span>
+                </a>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container is-max-desktop">
-
-      <div class="columns is-centered">
-        <div class="column is-8">
-          <div class="content">
-            <p>
-              SPECTRA - Solar Panel Evaluation through Computer Vision and Advanced Techniques for Reliable Analysis.
-              The project aims to automate the assessment of solar panel performance using computer vision algorithms and
-              advanced analytics.
-            </p>
-          </div>
+    </nav>
+    <section class="uploaded-images-section">
+        <h2>Uploaded Images</h2>
+        <div id="uploadedImages" class="uploaded-images">
+            <!-- Uploaded images will be displayed here -->
         </div>
-      </div>
-  </section>
+    </section>
 
-  <section class="section">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column is-8">
-          <div class="content">
-            <h2 class="title is-3">Key Features</h2>
-            <ul>
-              <li>Efficient solar panel evaluation through computer vision techniques</li>
-              <li>Advanced analysis methods for reliable performance assessment</li>
-              <li>Data-driven insights for optimal solar energy utilization</li>
-              <li>Enhanced accuracy in panel defect detection</li>
-              <li>Real-time monitoring and performance tracking</li>
-            </ul>
-          </div>
+    <section class="hero">
+        <div class="drop-box">
+            <input type="file" name="files" multiple class="file-input" />
+            <ul class="file-list"></ul>
         </div>
-      </div>
-    </div>
-  </section>
+        <h2>Uploader</h2>
+        <form enctype="multipart/form-data" method="POST" name="fileinfo">
+            <label>Upload your images:</label>
+            <input type="file" name="file" required multiple />
+            <input type="submit" value="Classify!" />
+        </form>
+    </section>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="content has-text-centered">
-        <p>
-          Special thanks to <a href="https://keunhong.com/">Keunhong Park</a> for developing and open-sourcing part of this website code.
-        </p>
-      </div>
-    </div>
-  </footer>
-  <script src="/server/static/main.js"></script>
+    <section class="result-text">
+        <h2>Results</h2>
+        <div id="loader" class="lds-dual-ring"></div>
+        <div id="results" class="grid-container">
+            <!-- Placeholder for the results of image classification -->
+        </div>
+    </section>
+    <section class="images">
+        <img src="{{ url_for('static', filename='accuracy_plot.png') }}" alt="1">
+        <img src="{{ url_for('static', filename='confusion_matrix.png') }}" alt="2">
+        <img src="{{ url_for('static', filename='image_examples.png') }}" alt="image_examples">
+        <img src="{{ url_for('static', filename='training_accuracy_loss.png') }}" alt="training_accuracy_loss">
+        <img src="{{ url_for('static', filename='training_validation_loss.png') }}" alt="2">
+    </section>
+    <!-- JavaScript files -->
+    <script src="../static/main.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
 
 </html>

@@ -29,12 +29,12 @@ model.load_state_dict(torch.load(model_filename, map_location=device))
 model.to(device)
 model.eval()
 
-app = Flask(__name__)
-cors = CORS(app) #Request will get blocked otherwise on Localhost
+app = Flask(__name__, static_url_path='/static')
+cors = CORS(app)
 
 @app.route("/")
 def upload():
-    return render_template("upload.html")
+    return render_template("index.html")
  
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
