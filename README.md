@@ -15,3 +15,9 @@ Sebastian-Schuchmann
 
 Dataset provider:
 <https://www.kaggle.com/datasets/pythonafroz/solar-panel-images?resource=download>
+
+Monday- 
+Tuesday-
+Wednesday-
+Thursday-
+Friday-
