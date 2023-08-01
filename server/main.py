@@ -50,8 +50,3 @@ def predict():
 
 if __name__=='__main__':
     app.run(host="0.0.0.0", port=8080)
-
-    # def predict():
-    # img = PILImage.create(request.files['file'])
-    # label,_,probs = learn.predict(img)
-    # return f'{label} ({torch.max(probs).item()*100:.0f}%)'

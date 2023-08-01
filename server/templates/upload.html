@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPECTRA: Solar Panel Evaluation</title>
+    <link rel="stylesheet" href="../static/styles.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
-    <link rel="stylesheet" href="../static/style.css">
 </head>
 
 <body>
@@ -43,7 +43,10 @@
     </section>
 
     <section class="hero">
-        <!-- Description of the website/project -->
+        <div class="drop-box">
+            <input type="file" name="files" multiple class="file-input" />
+            <ul class="file-list"></ul>
+          </div>
         <h2>Uploader</h2>
         <form enctype="multipart/form-data" method="POST" name="fileinfo">
             <label>Upload your images:</label>
@@ -59,11 +62,17 @@
             <!-- Placeholder for the results of image classification -->
         </div>
     </section>
-
+<section class="images">
+<img src="/server/91.32%/accuracy_plot.png" alt="1" width="200" height="200">
+<img src="/server/91.32%/confusion_matrix.png" alt="2" width="200" height="200">
+<img src="/server/91.32%/image_examples.png" alt="2" width="200" height="200">
+<img src="/server/91.32%/training_accuracy_loss.png" alt="2" width="200" height="200">
+<img src="/server/91.32/training_accuracy_loss" alt="2" width="200" height="200">
+</section>
     <!-- JavaScript files -->
     <script src="../static/upload.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script async defer src="https://buttons.github.io/buttons.js"></script> -->
 </body>
 
 </html>

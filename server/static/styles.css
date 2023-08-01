@@ -13,15 +13,15 @@
     padding: 10px 0px 10px 0px;
 }
 
-#churros {
-    position: fixed;
-    bottom: 0;
-    width: 340px;
-    height: 360px;
-    left:3%;
-    pointer-events: none;
+body {
+    background-color: rgb(237, 237, 237);
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    color: rgb(51, 51, 51);
+    margin: 0;
+    padding: 0;
 }
-
 
 .result {
     width: 33%px;
