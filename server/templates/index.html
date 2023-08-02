@@ -36,9 +36,11 @@
     <!-- Content -->
     <main class="main-content">
         <section class="uploaded-images-section">
-            <h2>Uploaded Images</h2>
-            <div id="uploadedImages" class="uploaded-images">
-                <!-- Uploaded images will be displayed here -->
+            <div class="image-container">
+                <h2>Uploaded Images</h2>
+                <div id="uploadedImages" class="uploaded-images">
+                    <!-- Uploaded images will be displayed here -->
+                </div>
             </div>
         </section>
 
@@ -65,7 +67,8 @@
                 <img src="{{ url_for('static', filename='confusion_matrix.png') }}" alt="confusion_matrix">
                 <img src="{{ url_for('static', filename='image_examples.png') }}" alt="image_examples">
                 <img src="{{ url_for('static', filename='training_accuracy_loss.png') }}" alt="training_accuracy_loss">
-                <img src="{{ url_for('static', filename='training_validation_loss.png') }}"alt="training_validation_loss">
+                <img src="{{ url_for('static', filename='training_validation_loss.png') }}"
+                    alt="training_validation_loss">
             </div>
         </section>
     </main>

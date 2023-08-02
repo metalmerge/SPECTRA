@@ -9,16 +9,12 @@ from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
 from PIL import Image
 import ssl
-import logging
 import torch.optim.lr_scheduler as lr_scheduler
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
-
-logging.basicConfig(filename='training.log', level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+import ssl
 
 num_retrain = int(input("How many times do you want to retrained the model? "))
 best_accuracy = 0.0
@@ -26,10 +22,20 @@ best_model_filename = ""
 ssl._create_default_https_context = ssl._create_default_https_context = ssl._create_unverified_context
 
 for retrain_index in range(num_retrain):
-    num_epochs = 20  # 10 or 20, bigger is better
-    learning_rate = .0001  # 0.001 or 0.0001, lower is better
-    batch_size = 32  # 8 or 16, bigger is better
+    if num_retrain > 1:
+        num_epochs = 20  # 10 or 20, bigger is better
+        learning_rate = .0001  # 0.001 or 0.0001, lower is better
+        batch_size = 32  # 8 or 16, bigger is better
+    else:
+        num_epochs = 1  # 10 or 20, bigger is better
+        learning_rate = .01  # 0.001 or 0.0001, lower is better
+        batch_size = 2  # 8 or 16, bigger is better
     weight_decay = 0.001  # Adjust this value based on your needs
+    step_size = 5  # Reduce the learning rate every 5 epochs
+    gamma = 0.1  # Reduce the learning rate by a factor of 0.1
+    patience = 5  # Number of epochs to wait for improvement before stopping
+    best_val_loss = float('inf')
+    counter = 0
 
     # Set the device (GPU or CPU)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -70,6 +76,7 @@ for retrain_index in range(num_retrain):
     criterion = nn.CrossEntropyLoss()
     # optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
     def calculate_validation_loss(model, criterion, val_loader, device):
         model.eval()
@@ -81,14 +88,6 @@ for retrain_index in range(num_retrain):
                 loss = criterion(outputs, labels)
                 val_loss += loss.item()
         return val_loss / len(val_loader)
-
-
-    step_size = 5  # Reduce the learning rate every 5 epochs
-    gamma = 0.1  # Reduce the learning rate by a factor of 0.1
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
-    patience = 5  # Number of epochs to wait for improvement before stopping
-    best_val_loss = float('inf')
-    counter = 0
 
     # Create a confusion matrix
     true_labels = train_dataset.targets
@@ -127,7 +126,7 @@ for retrain_index in range(num_retrain):
             _, predicted_classes = torch.max(outputs, 1)
             total += labels.size(0)
             correct += (predicted_classes == labels).sum().item()
-            logger.info(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}, Accuracy: {(correct / total) * 100:.2f}%")
+            print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}, Accuracy: {(correct / total) * 100:.2f}%")
 
         val_loss = calculate_validation_loss(model, criterion, val_loader, device)
         epoch_accuracy = 100 * correct / total
@@ -135,7 +134,7 @@ for retrain_index in range(num_retrain):
         running_losses.append(running_loss / len(train_loader))
         val_losses.append(val_loss)  # Append the validation loss for this epoch
 
-        logger.info(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%")
+        print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%")
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -160,8 +159,9 @@ for retrain_index in range(num_retrain):
     final_train_accuracy = accuracies[-1]
     if final_train_accuracy > best_accuracy:
         best_accuracy = final_train_accuracy
-        best_model_filename = f"/Users/dimaermakov/models_folder/model_{best_accuracy:.2f}_{total_time:.2f}.pth"
-        torch.save(model.state_dict(), best_model_filename)
+        if num_retrain > 1:
+            best_model_filename = f"/Users/dimaermakov/models_folder/model_{best_accuracy:.2f}_{total_time:.2f}.pth"
+            torch.save(model.state_dict(), best_model_filename)
 
         # model_filename = f"/Users/dimaermakov/night_model_{final_train_accuracy:.2f}.pth"
         # torch.save(model.state_dict(), model_filename)
@@ -176,7 +176,8 @@ for retrain_index in range(num_retrain):
         plt.ylabel('Value')
         plt.legend(loc=0)
         plt.tight_layout()
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/training_accuracy_loss_{best_accuracy:.2f}_{total_time:.2f}.png")
+        if num_retrain > 1:
+            plt.savefig(f"/Users/dimaermakov/Downloads/night_images/training_accuracy_loss_{best_accuracy:.2f}_{total_time:.2f}.png")
 
         # Plot training and validation loss
         plt.figure()
@@ -187,7 +188,7 @@ for retrain_index in range(num_retrain):
         plt.ylabel('Loss')
         plt.legend(loc=0)
         plt.tight_layout()
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/training_validation_loss_{best_accuracy:.2f}_{total_time:.2f}.png")
+        plt.savefig(f"/Users/dimaermakov/Downloads/night_images/training_validation_loss_{best_accuracy:.2f}_{total_time:.2f}.png")
 
 
         plt.figure()
@@ -197,7 +198,8 @@ for retrain_index in range(num_retrain):
         plt.title('Accuracy vs. Epoch')
         plt.grid()
         plt.tight_layout()
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/accuracy_plot_{best_accuracy:.2f}_{total_time:.2f}.png")
+        if num_retrain > 1:
+            plt.savefig(f"/Users/dimaermakov/Downloads/night_images/accuracy_plot_{best_accuracy:.2f}_{total_time:.2f}.png")
 
 
         # Plot a grid of individual image examples
@@ -242,8 +244,8 @@ for retrain_index in range(num_retrain):
                     break
 
         plt.tight_layout()
-
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/image_examples_{best_accuracy:.2f}_{total_time:.2f}.png")
+        if num_retrain > 1:
+            plt.savefig(f"/Users/dimaermakov/Downloads/night_images/image_examples_{best_accuracy:.2f}_{total_time:.2f}.png")
 
         model.eval()
         predicted_labels = []
@@ -265,7 +267,8 @@ for retrain_index in range(num_retrain):
         plt.ylabel("True")
         plt.title("Confusion Matrix")
         plt.tight_layout()
-        plt.savefig(f"/Users/dimaermakov/SPECTRA/server/training_images/confusion_matrix_{best_accuracy:.2f}_{total_time:.2f}.png")
+        if num_retrain > 1:
+            plt.savefig(f"/Users/dimaermakov/Downloads/night_images/confusion_matrix_{best_accuracy:.2f}_{total_time:.2f}.png")
 
 print(f"Best model saved successfully as {best_model_filename}.")
 print(f"Best accuracy achieved: {best_accuracy:.2f}%.")

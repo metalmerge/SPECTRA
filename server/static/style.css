@@ -11,7 +11,7 @@ body {
 
 /* Header */
 .header {
-    background-color: #007bff;
+    background-color: green;
     padding: 10px;
     text-align: center;
 }
@@ -65,16 +65,16 @@ body {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
-  }
+}
 
 .form-control:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: darkgoldenrod;
 }
 
 /* Style the Classify button */
 input[type="submit"] {
-    background-color: #007bff;
+    background-color: darkgoldenrod;
     color: #fff;
     border: none;
     padding: 12px 20px;
@@ -85,7 +85,7 @@ input[type="submit"] {
 }
 
 input[type="submit"]:hover {
-    background-color: #0056b3;
+    background-color: darkgoldenrod;
 }
 
 .result .image {
@@ -103,7 +103,7 @@ input[type="submit"]:hover {
 }
 
 .upload-btn {
-    background-color: #007bff;
+    background-color: green;
     color: #fff;
     padding: 12px 20px;
     border-radius: 4px;
@@ -113,7 +113,7 @@ input[type="submit"]:hover {
 }
 
 .upload-btn:hover {
-    background-color: #0056b3;
+    background-color: darkgoldenrod;
 }
 
 /* Add some spacing between the form elements */
@@ -125,7 +125,7 @@ input[type="submit"]:hover {
 .hero h2,
 .result-text h2 {
     text-align: center;
-    color: #007bff;
+    color: darkgoldenrod;
 }
 
 .grid-container {
@@ -140,6 +140,7 @@ input[type="submit"]:hover {
     display: block;
     border-radius: 4px;
 }
+
 .footer {
     width: 100%;
     position: fixed;
@@ -149,16 +150,17 @@ input[type="submit"]:hover {
     color: #fff;
     text-align: center;
     padding: 25px;
-  }
-  /* Loading spinner */
-  .lds-dual-ring {
+}
+
+/* Loading spinner */
+.lds-dual-ring {
     visibility: hidden;
     display: inline-block;
     width: 80px;
     height: 80px;
-  }
-  
-  .lds-dual-ring:after {
+}
+
+.lds-dual-ring:after {
     content: " ";
     display: block;
     width: 32px;
@@ -169,7 +171,7 @@ input[type="submit"]:hover {
     border: 6px solid #606c76;
     border-color: #606c76 transparent #606c76 transparent;
     animation: lds-dual-ring 1.2s linear infinite;
-  }
+}
 
 /* Media Query for responsiveness */
 @media (max-width: 768px) {
@@ -183,8 +185,8 @@ input[type="file"] {
     display: block;
     margin: 0 auto;
     margin-bottom: 20px;
-
 }
+
 .image-container {
     display: flex;
     flex-wrap: wrap;
@@ -198,4 +200,17 @@ input[type="file"] {
 .image-container img {
     max-width: 100%;
     height: auto;
+}
+
+/* Form elements background color */
+.form-control,
+.upload-btn,
+input[type="submit"] {
+    background-color: whitesmoke; /* Orange */
+}
+
+/* Hover color for buttons */
+.upload-btn:hover,
+input[type="submit"]:hover {
+    background-color: green; /* Dark Orange */
 }
