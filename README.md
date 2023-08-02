@@ -9,11 +9,10 @@ The research project, Solar Panel Evaluation through Computer Vision and Advance
 For training, simply use download all the nesscary packages, libraries, and python, type "python3 trainer.py" into the terminal.
 For the website, type "cd server" and then "python3 main.py." Make sure all the file paths are correct.
 
-Slideshow: <https://docs.google.com/presentation/d/1IXOd_GW-kwU6aTCM0LoaoZ81ocGVX3JAraltOzfqTIQ/edit?usp=sharing>
+#Aknowledgements
 
 Resource for learning neural networks:
-Sebastian-Schuchmann
-<https://youtu.be/k1GIEkzQ8qc>
+Sebastian-Schuchmann = <https://youtu.be/k1GIEkzQ8qc>
+Dataset provider: AFROZ = <https://www.kaggle.com/datasets/pythonafroz/solar-panel-images?resource=download>
 
-Dataset provider:
-<https://www.kaggle.com/datasets/pythonafroz/solar-panel-images?resource=download>
+Slideshow: <https://docs.google.com/presentation/d/1IXOd_GW-kwU6aTCM0LoaoZ81ocGVX3JAraltOzfqTIQ/edit?usp=sharing>
