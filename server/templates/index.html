@@ -13,63 +13,66 @@
 </head>
 
 <body>
-    <nav class="navbar" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-            </a>
-        </div>
-        <div class="navbar-menu">
-            <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
-                <a class="navbar-item" href="index.html">
-                    <span class="icon">
-                        <i class="fas fa-home"></i>
-                    </span>
-                </a>
-                <a class="navbar-item" href="upload.html">
-                    <span class="icon">
-                        <i class="fas fa-flask"></i>
-                    </span>
-                </a>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-menu">
+                <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+                    <a class="navbar-item" href="main_page.html">
+                        <span class="icon">
+                            <i class="fas fa-home"></i>
+                        </span>
+                    </a>
+                    <a class="navbar-item" href="index.html">
+                        <span class="icon">
+                            <i class="fas fa-flask"></i>
+                        </span>
+                    </a>
+                </div>
             </div>
-        </div>
-    </nav>
-    <section class="uploaded-images-section">
-        <h2>Uploaded Images</h2>
-        <div id="uploadedImages" class="uploaded-images">
-            <!-- Uploaded images will be displayed here -->
-        </div>
-    </section>
+        </nav>
+    </header>
 
-    <section class="hero">
-        <div class="drop-box">
-            <input type="file" name="files" multiple class="file-input" />
-            <ul class="file-list"></ul>
-        </div>
-        <h2>Uploader</h2>
-        <form enctype="multipart/form-data" method="POST" name="fileinfo">
-            <label>Upload your images:</label>
-            <input type="file" name="file" required multiple />
-            <input type="submit" value="Classify!" />
-        </form>
-    </section>
+    <!-- Content -->
+    <main class="main-content">
+        <section class="uploaded-images-section">
+            <h2>Uploaded Images</h2>
+            <div id="uploadedImages" class="uploaded-images">
+                <!-- Uploaded images will be displayed here -->
+            </div>
+        </section>
 
-    <section class="result-text">
-        <h2>Results</h2>
-        <div id="loader" class="lds-dual-ring"></div>
-        <div id="results" class="grid-container">
-            <!-- Placeholder for the results of image classification -->
-        </div>
-    </section>
-    <section class="images">
-        <img src="{{ url_for('static', filename='accuracy_plot.png') }}" alt="1">
-        <img src="{{ url_for('static', filename='confusion_matrix.png') }}" alt="2">
-        <img src="{{ url_for('static', filename='image_examples.png') }}" alt="image_examples">
-        <img src="{{ url_for('static', filename='training_accuracy_loss.png') }}" alt="training_accuracy_loss">
-        <img src="{{ url_for('static', filename='training_validation_loss.png') }}" alt="2">
-    </section>
+        <section class="hero">
+            <h2>Uploader</h2>
+            <form enctype="multipart/form-data" method="POST" name="fileinfo">
+                <label class="form-label">Upload your images:</label>
+                <input class="form-control" type="file" name="file" class="" required multiple />
+                <input type="submit" value="Classify!" />
+            </form>
+        </section>
+
+        <section class="result-text">
+            <h2>Results</h2>
+            <div id="loader" class="lds-dual-ring"></div>
+            <div id="results" class="grid-container">
+                <!-- Placeholder for the results of image classification -->
+            </div>
+        </section>
+
+        <section class="images">
+            <img src="{{ url_for('static', filename='accuracy_plot.png') }}" alt="1">
+            <img src="{{ url_for('static', filename='confusion_matrix.png') }}" alt="2">
+            <img src="{{ url_for('static', filename='image_examples.png') }}" alt="image_examples">
+            <img src="{{ url_for('static', filename='training_accuracy_loss.png') }}" alt="training_accuracy_loss">
+            <img src="{{ url_for('static', filename='training_validation_loss.png') }}" alt="2">
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; SPECTRA Solar Panel Evaluation</p>
+    </footer>
+
     <!-- JavaScript files -->
     <script src="../static/main.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>

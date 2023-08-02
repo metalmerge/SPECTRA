@@ -9,11 +9,16 @@ from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
 from PIL import Image
 import ssl
+import logging
 import torch.optim.lr_scheduler as lr_scheduler
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
+
+logging.basicConfig(filename='training.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 num_retrain = int(input("How many times do you want to retrained the model? "))
 best_accuracy = 0.0
@@ -31,19 +36,17 @@ for retrain_index in range(num_retrain):
 
     # Define data transformations
     transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomVerticalFlip(),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-        transforms.RandomRotation(10),
-        transforms.RandomGrayscale(p=0.2),  # Add random grayscale with probability 0.2
-        transforms.RandomPerspective(),  # Add random perspective transformation
-        transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.8, 1.2)),  # Random affine transformation
-        transforms.RandomCrop(224, padding=20),  # Random cropping with padding
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-
+    transforms.Resize((224, 224)),  # Resize images to (224, 224) before augmentations
+    transforms.RandomHorizontalFlip(),  # Randomly flip the image horizontally with a probability of 0.5
+    transforms.RandomVerticalFlip(),    # Randomly flip the image vertically with a probability of 0.5
+    transforms.RandomRotation(10),      # Randomly rotate the image by a maximum of 10 degrees
+    transforms.RandomPerspective(),     # Random perspective transformation
+    transforms.RandomAdjustSharpness(0.3),  # Randomly adjust sharpness with a factor of 0.3
+    transforms.RandomApply([transforms.RandomPerspective(distortion_scale=0.3, p=0.5)], p=0.1),  # Stronger perspective transformation with a probability of 0.1
+    transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.8, 1.2)),  # Random affine transformation (rotation, translation, scaling)
+    transforms.ToTensor(),  # Convert the image to a PyTorch tensor
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize the image with mean and standard deviation
+])
     # Load the dataset
     data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Train"
     train_dataset = datasets.ImageFolder(data_path, transform=transform)
@@ -124,7 +127,7 @@ for retrain_index in range(num_retrain):
             _, predicted_classes = torch.max(outputs, 1)
             total += labels.size(0)
             correct += (predicted_classes == labels).sum().item()
-            print(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}, Accuracy: {(correct / total) * 100:.2f}%")
+            logger.info(f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}, Accuracy: {(correct / total) * 100:.2f}%")
 
         val_loss = calculate_validation_loss(model, criterion, val_loader, device)
         epoch_accuracy = 100 * correct / total
@@ -132,7 +135,7 @@ for retrain_index in range(num_retrain):
         running_losses.append(running_loss / len(train_loader))
         val_losses.append(val_loss)  # Append the validation loss for this epoch
 
-        print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%")
+        logger.info(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%")
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
