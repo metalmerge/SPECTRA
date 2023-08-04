@@ -15,33 +15,41 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import confusion_matrix
 from torchvision import datasets, transforms, models
 
-num_retrain = int(input("How many times do you want to retrained the model? "))
+# User input: Number of times to retrain the model
+num_retrain = int(input("How many times do you want to retrain the model? "))
+
+# Initialize variables to store best accuracy and model filename
 best_accuracy = 0.0
 best_model_filename = ""
+
+# Disable SSL verification for downloading data (can be optional)
 ssl._create_default_https_context = (
     ssl._create_default_https_context
 ) = ssl._create_unverified_context
 
+# Loop for multiple retraining iterations
 for retrain_index in range(num_retrain):
+    # Set hyperparameters based on the value of num_retrain
     if num_retrain > 1:
         num_epochs = 20  # 10 or 20, bigger is better
         learning_rate = 0.0001  # 0.001 or 0.0001, lower is better
         batch_size = 32  # 8 or 16, bigger is better
     else:
         num_epochs = 1
-        learning_rate = 1
+        learning_rate = .1
         batch_size = 1
-    weight_decay = 0.001  # Adjust this value based on your needs
-    step_size = 5  # Reduce the learning rate every 5 epochs
-    gamma = 0.1  # Reduce the learning rate by a factor of 0.1
+
+    weight_decay = 0.001  # L2 regularization strength, adjust based on needs
+    step_size = 5  # Step size for learning rate scheduling
+    gamma = 0.1  # Factor to reduce learning rate
     patience = 5  # Number of epochs to wait for improvement before stopping
     best_val_loss = float("inf")
     counter = 0
 
-    # Set the device (GPU or CPU)
+    # Set the device to use GPU if available, otherwise use CPU
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Define data transformations
+    # Define data transformations for image augmentation
     transform = transforms.Compose(
         [
             transforms.Resize(
@@ -68,33 +76,37 @@ for retrain_index in range(num_retrain):
             ),  # Normalize the image with mean and standard deviation
         ]
     )
-    # Load the dataset
+
+    # Load the training and validation datasets
     data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Train"
     train_dataset = datasets.ImageFolder(data_path, transform=transform)
+
     val_data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Validation"
     val_dataset = datasets.ImageFolder(val_data_path, transform=transform)
 
-    # Create data loaders
+    # Create data loaders to efficiently process batches of data during training and evaluation
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
-    # Load the base model (ResNet50) with the pre-trained weights using the 'weights' parameter
+    # Load the base model (ResNet50) with the pre-trained weights from ImageNet
     base_model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
     num_classes = len(train_dataset.classes)
     in_features = base_model.fc.in_features
     base_model.fc = nn.Linear(in_features, num_classes)
 
-    # Move the model to the device (GPU or CPU)
+    # Move the model to the selected device
     model = base_model.to(device)
 
-    # Define loss function and optimizer
+    # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
-    # optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     optimizer = optim.Adam(
         model.parameters(), lr=learning_rate, weight_decay=weight_decay
     )
+
+    # Set up the learning rate scheduler to reduce the learning rate over time
     scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
+    # Function to calculate validation loss during model evaluation
     def calculate_validation_loss(model, criterion, val_loader, device):
         model.eval()
         val_loss = 0.0
@@ -106,56 +118,69 @@ for retrain_index in range(num_retrain):
                 val_loss += loss.item()
         return val_loss / len(val_loader)
 
-    # Create a confusion matrix
+    # Initialize lists to store training statistics
     true_labels = train_dataset.targets
-    predicted_labels = []
-
-    # Training loop
     accuracies = []
     running_losses = []
     val_losses = []
+    predicted_labels = []
 
+    # Record the start time for training duration calculation
     start_time = time.time()
     print("Training started...")
+
+    # Training loop for the specified number of epochs
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
         correct = 0
         total = 0
-        epoch_loss = running_loss / len(train_loader)
+
+        # Loop through batches of the training data
         for batch_idx, (inputs, labels) in enumerate(train_loader):
             inputs, labels = inputs.to(device), labels.to(device)
+
+            # Reset gradients to zero before computing backward pass
             optimizer.zero_grad()
+
+            # Forward pass through the model and compute loss
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
-            optimizer.step()
-            running_loss += loss.item()
 
-            # Calculate L2 regularization term (optional, add to loss)
+            # Calculate L2 regularization term and add it to the loss (optional)
             l2_regularization = 0.0
             for param in model.parameters():
                 l2_regularization += torch.norm(param, 2)
             loss += weight_decay * l2_regularization
 
-            # Calculate accuracy
+            # Update model parameters using the optimizer
+            optimizer.step()
+            running_loss += loss.item()
+
+            # Calculate training accuracy
             _, predicted_classes = torch.max(outputs, 1)
             total += labels.size(0)
             correct += (predicted_classes == labels).sum().item()
+
+            # Print batch-level training progress
             print(
                 f"Epoch {epoch + 1}/{num_epochs}, Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}, Accuracy: {(correct / total) * 100:.2f}%"
             )
 
+        # Calculate validation loss at the end of each epoch
         val_loss = calculate_validation_loss(model, criterion, val_loader, device)
         epoch_accuracy = 100 * correct / total
         accuracies.append(epoch_accuracy)
         running_losses.append(running_loss / len(train_loader))
-        val_losses.append(val_loss)  # Append the validation loss for this epoch
+        val_losses.append(val_loss)
 
+        # Print epoch-level training progress
         print(
-            f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%"
+            f"Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss / len(train_loader):.4f}, Validation Loss: {val_loss:.4f}, Accuracy: {epoch_accuracy:.2f}%"
         )
 
+        # Early stopping: Check if validation loss has improved, if not, increment counter
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             counter = 0
@@ -170,28 +195,30 @@ for retrain_index in range(num_retrain):
         scheduler.step()
 
     # Function to predict the class of an input image
+
+    # Record the end time for training duration calculation
     end_time = time.time()
     total_time = end_time - start_time / 60
     print(f"Training completed in {(end_time - start_time) / 60:.2f} minutes.")
 
     # Example usage
 
+    # Get the final training accuracy
     final_train_accuracy = accuracies[-1]
+
+    # Save the best model and update best_accuracy if applicable
     if final_train_accuracy > best_accuracy:
         best_accuracy = final_train_accuracy
+
+        # Save the best model if num_retrain > 1
         if num_retrain > 1:
             best_model_filename = (
                 f"/Users/dimaermakov/models_folder/model_{best_accuracy:.2f}.pth"
             )
             torch.save(model.state_dict(), best_model_filename)
 
-        # model_filename = f"/Users/dimaermakov/night_model_{final_train_accuracy:.2f}.pth"
-        # torch.save(model.state_dict(), model_filename)
-        print(
-            f"Model saved successfully as {best_model_filename}."
-        )  # Plot training accuracy and loss
+        # Save plots for training accuracy and loss
         epochs = range(1, num_epochs + 1)
-
         plt.figure()
         plt.plot(epochs, accuracies, "g", label="Accuracy of Training data")
         plt.plot(epochs, running_losses, "r", label="Loss of Training data")
@@ -200,17 +227,16 @@ for retrain_index in range(num_retrain):
         plt.ylabel("Value")
         plt.legend(loc=0)
         plt.tight_layout()
+
         if num_retrain > 1:
             plt.savefig(
                 f"/Users/dimaermakov/Downloads/night_images/training_accuracy_loss_{best_accuracy:.2f}.png"
             )
 
-        # Plot training and validation loss
+        # Save plots for training and validation loss
         plt.figure()
         plt.plot(epochs, running_losses, "g", label="Loss of Training Data")
-        plt.plot(
-            epochs, val_losses, "r", label="Loss of Validation Data"
-        )  # Use val_losses instead of val_loss
+        plt.plot(epochs, val_losses, "r", label="Loss of Validation Data")
         plt.title("Training and Validation Loss")
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
@@ -220,6 +246,7 @@ for retrain_index in range(num_retrain):
             f"/Users/dimaermakov/Downloads/night_images/training_validation_loss_{best_accuracy:.2f}.png"
         )
 
+        # Save plot for accuracy vs. epoch
         plt.figure()
         plt.plot(range(1, num_epochs + 1), accuracies, marker="o")
         plt.xlabel("Epoch")
@@ -227,6 +254,7 @@ for retrain_index in range(num_retrain):
         plt.title("Accuracy vs. Epoch")
         plt.grid()
         plt.tight_layout()
+
         if num_retrain > 1:
             plt.savefig(
                 f"/Users/dimaermakov/Downloads/night_images/accuracy_plot_{best_accuracy:.2f}.png"
@@ -241,43 +269,28 @@ for retrain_index in range(num_retrain):
             "Physical-Damage",
             "Snow-Covered",
         ]
-
-        num_examples = 32  # Number of image examples to show
+        num_examples = 32
         rows = int(np.ceil(num_examples / 4))
         plt.figure(figsize=(15, 15))
-
-        # Extract the filenames for the entire validation dataset
         val_filenames = [val_dataset.samples[i][0] for i in range(len(val_dataset))]
 
+        # Loop through batches of validation data to show image examples
         for batch_idx, (images, labels) in enumerate(val_loader):
             for i in range(min(num_examples - batch_idx * batch_size, batch_size)):
                 ax = plt.subplot(rows, 4, i + 1 + batch_idx * batch_size)
                 image = images[i].cpu().numpy().transpose(1, 2, 0)
-                image = image * [0.229, 0.224, 0.225] + [
-                    0.485,
-                    0.456,
-                    0.406,
-                ]  # Unnormalize the image
-                image = np.clip(
-                    image, 0, 1
-                )  # Clip to [0, 1] range in case of numerical errors
+                image = image * [0.229, 0.224, 0.225] + [0.485, 0.456, 0.406]
+                image = np.clip(image, 0, 1)
                 plt.imshow(image)
                 plt.title("Actual: " + class_names[labels[i]])
                 plt.gca().axes.yaxis.set_ticklabels([])
                 plt.gca().axes.xaxis.set_ticklabels([])
-
-                # Get the filenames for the current batch
                 start_index = batch_idx * batch_size
-                filenames = val_filenames[
-                    start_index + i : start_index + i + 1
-                ]  # Extract the filename for the current image
+                filenames = val_filenames[start_index + i : start_index + i + 1]
                 for filename in filenames:
-                    plt.xlabel(
-                        os.path.basename(filename)
-                    )  # Show only the filename without the full path
-
+                    plt.xlabel(os.path.basename(filename))
                 with torch.no_grad():
-                    model.eval()  # Set the model to evaluation mode
+                    model.eval()
                     inputs = images[i].unsqueeze(0).to(device)
                     outputs = model(inputs)
                     _, predicted_class = torch.max(outputs, 1)
@@ -300,6 +313,7 @@ for retrain_index in range(num_retrain):
                 f"/Users/dimaermakov/Downloads/night_images/image_examples_{best_accuracy:.2f}.png"
             )
 
+        # Evaluate the model on the training data and calculate the confusion matrix
         model.eval()
         predicted_labels = []
         with torch.no_grad():
@@ -312,7 +326,6 @@ for retrain_index in range(num_retrain):
         true_labels = np.array(true_labels)
         predicted_labels = np.array(predicted_labels)
 
-        # Calculate the confusion matrix
         conf_matrix = confusion_matrix(true_labels, predicted_labels)
         plt.figure(figsize=(10, 8))
         sns.heatmap(
@@ -327,12 +340,16 @@ for retrain_index in range(num_retrain):
         plt.ylabel("True")
         plt.title("Confusion Matrix")
         plt.tight_layout()
+
         if num_retrain > 1:
             plt.savefig(
                 f"/Users/dimaermakov/Downloads/night_images/confusion_matrix_{best_accuracy:.2f}.png"
             )
 
+# Print best model and accuracy after all retraining iterations (if applicable)
 print(f"Best model saved successfully as {best_model_filename}.")
 print(f"Best accuracy achieved: {best_accuracy:.2f}%.")
+
+# Put the computer to sleep after 5 seconds (only for last retraining iteration)
 if num_retrain > 1:
-    os.system("sleep 5 && pmset sleepnow")  # Put the computer to sleep after 5 seconds
+    os.system("sleep 5 && pmset sleepnow")
