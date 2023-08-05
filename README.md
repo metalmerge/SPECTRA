@@ -17,4 +17,3 @@ CGP GREY = <https://www.youtube.com/watch?v=R9OHn5ZF4Uo&list=TLPQMDIwODIwMjMlLYR
 3Blue1Brown = <https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi>
 
 Dataset provider: AFROZ = <https://www.kaggle.com/datasets/pythonafroz/solar-panel-images?resource=download>
-Slideshow: <https://docs.google.com/presentation/d/1IXOd_GW-kwU6aTCM0LoaoZ81ocGVX3JAraltOzfqTIQ/edit?usp=sharing>
