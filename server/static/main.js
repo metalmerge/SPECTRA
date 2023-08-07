@@ -23,11 +23,12 @@ form.addEventListener('submit', function (ev) {
   let loc = window.location;
 
   fetch(`${loc.protocol}//${loc.hostname}:${loc.port}/predict`, requestOptions)
-    .then(response => response.text().then((result => {
-      console.log(result);
-      DisplayResult(result, uploadedFiles);
+    .then(response => response.json())
+    .then(results => {
+      console.log(results);
+      DisplayResult(results, uploadedFiles);
       document.getElementById("loader").style.visibility = "hidden";
-    })));
+    });
 });
 
 // On Images Uploaded
@@ -53,8 +54,9 @@ form.addEventListener('change', function (ev) {
   }
 });
 
-function DisplayResult(result, uploadedFiles) {
+function DisplayResult(results, uploadedFiles) {
   let resultDiv = document.getElementById("results");
+  resultDiv.innerHTML = ""; // Clear previous results
 
   for (let i = 0; i < uploadedFiles.length; i++) {
     let divContainer = document.createElement("div");
@@ -65,11 +67,11 @@ function DisplayResult(result, uploadedFiles) {
     divImage.style.backgroundImage = "url('" + lastImages[i] + "')";
 
     let divText = document.createElement("div");
-    divText.appendChild(document.createTextNode(result));
+    divText.appendChild(document.createTextNode(results[i])); // Use the correct result for each image
     divText.className = "text";
 
     divContainer.appendChild(divImage);
     divContainer.appendChild(divText);
-    resultDiv.prepend(divContainer);
+    resultDiv.appendChild(divContainer); // Use appendChild instead of prepend to maintain order
   }
 }

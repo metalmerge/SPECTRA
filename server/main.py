@@ -38,15 +38,21 @@ def upload():
  
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    img = Image.open(request.files['file'])
-    img = transform(img).unsqueeze(0).to(device)  # Add batch dimension and move to the device
-    with torch.no_grad():
-        output = model(img)
-        _, predicted_class = torch.max(output, 1)
-        class_index = predicted_class.item()
-        # Replace 'dataset.classes' with the list of class names in your dataset
-        class_name = ['Bird-drop', 'Clean', 'Dusty', 'Electrical-damage', 'Physical-Damage', 'Snow-Covered'][class_index]
-    return class_name
+    img_files = request.files.getlist('file')  # Get a list of all the uploaded images
+    results = []
+
+    for img_file in img_files:
+        img = Image.open(img_file)
+        img = transform(img).unsqueeze(0).to(device)  # Add batch dimension and move to the device
+        with torch.no_grad():
+            output = model(img)
+            _, predicted_class = torch.max(output, 1)
+            class_index = predicted_class.item()
+            # Replace 'dataset.classes' with the list of class names in your dataset
+            class_name = ['Bird-drop', 'Clean', 'Dusty', 'Electrical-damage', 'Physical-Damage', 'Snow-Covered'][class_index]
+            results.append(class_name)
+
+    return results
 
 if __name__=='__main__':
     app.run(host="0.0.0.0", port=8080)
