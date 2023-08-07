@@ -35,9 +35,9 @@ for retrain_index in range(num_retrain):
         learning_rate = 0.0001  # 0.001 or 0.0001, lower is better
         batch_size = 32  # 8 or 16, bigger is better
     else:
-        num_epochs = 1
-        learning_rate = .1
-        batch_size = 1
+        num_epochs = 3
+        learning_rate = 0.0001
+        batch_size = 32
 
     weight_decay = 0.001  # L2 regularization strength, adjust based on needs
     step_size = 5  # Step size for learning rate scheduling
@@ -148,7 +148,7 @@ for retrain_index in range(num_retrain):
             loss = criterion(outputs, labels)
             loss.backward()
 
-            # Calculate L2 regularization term and add it to the loss (optional)
+            # Calculate L2 regularization term and add it to the loss
             l2_regularization = 0.0
             for param in model.parameters():
                 l2_regularization += torch.norm(param, 2)
@@ -170,7 +170,7 @@ for retrain_index in range(num_retrain):
 
         # Calculate validation loss at the end of each epoch
         val_loss = calculate_validation_loss(model, criterion, val_loader, device)
-        epoch_accuracy = 100 * correct / total
+        epoch_accuracy = correct / total
         accuracies.append(epoch_accuracy)
         running_losses.append(running_loss / len(train_loader))
         val_losses.append(val_loss)
@@ -217,34 +217,24 @@ for retrain_index in range(num_retrain):
             )
             torch.save(model.state_dict(), best_model_filename)
 
-        # Save plots for training accuracy and loss
+        # Combined plot for accuracy, running loss, and validation loss vs. epoch
         epochs = range(1, num_epochs + 1)
         plt.figure()
         plt.plot(epochs, accuracies, "g", label="Accuracy of Training data")
         plt.plot(epochs, running_losses, "r", label="Loss of Training data")
-        plt.title("Training data accuracy and loss")
+        plt.plot(epochs, val_losses, "b", label="Loss of Validation Data")
+        plt.title("Training data accuracy, running loss, and validation loss")
         plt.xlabel("Epoch")
         plt.ylabel("Value")
         plt.legend(loc=0)
         plt.tight_layout()
+        if num_retrain < 2:
+            plt.show()
 
         if num_retrain > 1:
             plt.savefig(
-                f"/Users/dimaermakov/Downloads/night_images/training_accuracy_loss_{best_accuracy:.2f}.png"
+                f"/Users/dimaermakov/Downloads/night_images/training_combined_plot_{best_accuracy:.2f}.png"
             )
-
-        # Save plots for training and validation loss
-        plt.figure()
-        plt.plot(epochs, running_losses, "g", label="Loss of Training Data")
-        plt.plot(epochs, val_losses, "r", label="Loss of Validation Data")
-        plt.title("Training and Validation Loss")
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.legend(loc=0)
-        plt.tight_layout()
-        plt.savefig(
-            f"/Users/dimaermakov/Downloads/night_images/training_validation_loss_{best_accuracy:.2f}.png"
-        )
 
         # Save plot for accuracy vs. epoch
         plt.figure()
