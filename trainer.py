@@ -52,28 +52,16 @@ for retrain_index in range(num_retrain):
     # Define data transformations for image augmentation
     transform = transforms.Compose(
         [
-            transforms.Resize(
-                (224, 224)
-            ),  # Resize images to (224, 224) before augmentations
+            transforms.Resize((224, 224)),  # Resize images to (224, 224) before augmentations
             transforms.RandomHorizontalFlip(),  # Randomly flip the image horizontally with a probability of 0.5
             transforms.RandomVerticalFlip(),  # Randomly flip the image vertically with a probability of 0.5
-            transforms.RandomRotation(
-                10
-            ),  # Randomly rotate the image by a maximum of 10 degrees
+            transforms.RandomRotation(10),  # Randomly rotate the image by a maximum of 10 degrees
             transforms.RandomPerspective(),  # Random perspective transformation
-            transforms.RandomAdjustSharpness(
-                0.3
-            ),  # Randomly adjust sharpness with a factor of 0.3
-            transforms.RandomApply(
-                [transforms.RandomPerspective(distortion_scale=0.3, p=0.5)], p=0.1
-            ),  # Stronger perspective transformation with a probability of 0.1
-            transforms.RandomAffine(
-                degrees=10, translate=(0.1, 0.1), scale=(0.8, 1.2)
-            ),  # Random affine transformation (rotation, translation, scaling)
+            transforms.RandomAdjustSharpness(0.3),  # Randomly adjust sharpness with a factor of 0.3
+            transforms.RandomApply([transforms.RandomPerspective(distortion_scale=0.3, p=0.5)], p=0.1),  # Stronger perspective transformation with a probability of 0.1
+            transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.8, 1.2)),  # Random affine transformation (rotation, translation, scaling)
             transforms.ToTensor(),  # Convert the image to a PyTorch tensor
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-            ),  # Normalize the image with mean and standard deviation
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize the image with mean and standard deviation
         ]
     )
 
