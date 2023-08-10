@@ -11,13 +11,14 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 import torch.optim.lr_scheduler as lr_scheduler
 from PIL import Image
+from auto_augment import AutoAugment
 from torch.utils.data import DataLoader
 from sklearn.metrics import confusion_matrix
 from torchvision import datasets, transforms, models
 
 # User input: Number of times to retrain the model
 num_retrain = int(input("How many times do you want to retrain the model? "))
-
+testing = input("Is this a test run? (y/n) ").lower()
 # Initialize variables to store best accuracy and model filename
 best_accuracy = 0.0
 best_hyperparameters = {}
@@ -28,13 +29,17 @@ ssl._create_default_https_context = (
     ssl._create_default_https_context
 ) = ssl._create_unverified_context
 
+if testing == "y":
+    num_epochs_values = [1]
+    learning_rate_values = [0.001]
+    batch_size_values = [55]
+else:
+    num_epochs_values = [20]
+    learning_rate_values = [0.0001]
+    batch_size_values = [32, 48, 55, 64]
+
 # Loop for multiple retraining iterations
 for retrain_index in range(num_retrain):
-    # Set hyperparameters based on the value of num_retrain
-    num_epochs_values = [20]
-    learning_rate_values = [0.0001, 0.001]
-    batch_size_values = [8, 16, 32, 64]
-
     # Training loop for the specified number of epochs
     for num_epochs in num_epochs_values:
         for learning_rate in learning_rate_values:
@@ -57,28 +62,29 @@ for retrain_index in range(num_retrain):
                         transforms.Resize(
                             (224, 224)
                         ),  # Resize images to (224, 224) before augmentations
-                        transforms.RandomHorizontalFlip(),  # Randomly flip the image horizontally with a probability of 0.5
-                        transforms.RandomVerticalFlip(),  # Randomly flip the image vertically with a probability of 0.5
-                        transforms.RandomRotation(
-                            10
-                        ),  # Randomly rotate the image by a maximum of 10 degrees
-                        transforms.RandomPerspective(),  # Random perspective transformation
-                        transforms.RandomAdjustSharpness(
-                            0.3
-                        ),  # Randomly adjust sharpness with a factor of 0.3
-                        transforms.RandomApply(
-                            [transforms.RandomPerspective(distortion_scale=0.3, p=0.5)],
-                            p=0.1,
-                        ),  # Stronger perspective transformation with a probability of 0.1
-                        transforms.RandomAffine(
-                            degrees=10, translate=(0.1, 0.1), scale=(0.8, 1.2)
-                        ),  # Random affine transformation (rotation, translation, scaling)
+                        AutoAugment(),
                         transforms.ToTensor(),  # Convert the image to a PyTorch tensor
                         transforms.Normalize(
                             mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
                         ),  # Normalize the image with mean and standard deviation
                     ]
                 )
+                        # transforms.RandomHorizontalFlip(),  # Randomly flip the image horizontally with a probability of 0.5
+                        # transforms.RandomVerticalFlip(),  # Randomly flip the image vertically with a probability of 0.5
+                        # transforms.RandomRotation(
+                        #     10
+                        # ),  # Randomly rotate the image by a maximum of 10 degrees
+                        # transforms.RandomPerspective(),  # Random perspective transformation
+                        # transforms.RandomAdjustSharpness(
+                        #     0.3
+                        # ),  # Randomly adjust sharpness with a factor of 0.3
+                        # transforms.RandomApply(
+                        #     [transforms.RandomPerspective(distortion_scale=0.3, p=0.5)],
+                        #     p=0.1,
+                        # ),  # Stronger perspective transformation with a probability of 0.1
+                        # transforms.RandomAffine(
+                        #     degrees=10, translate=(0.1, 0.1), scale=(0.8, 1.2)
+                        # ), 
 
                 # Load the training and validation datasets
                 data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Train"
@@ -210,151 +216,195 @@ for retrain_index in range(num_retrain):
                     running_loss = 0.0
                     scheduler.step()
 
-    # Function to predict the class of an input image
+                    # Function to predict the class of an input image
 
-    # Record the end time for training duration calculation
-    end_time = time.time()
-    total_time = end_time - start_time / 60
-    print(f"Training completed in {(end_time - start_time) / 60:.2f} minutes.")
+                    # Record the end time for training duration calculation
+                    end_time = time.time()
+                    total_time = end_time - start_time / 60
+                    print(
+                        f"Training completed in {(end_time - start_time) / 60:.2f} minutes."
+                    )
 
-    # Example usage
+                    # Example usage
 
-    # Get the final training accuracy
-    final_train_accuracy = accuracies[-1]
+                    # Get the final training accuracy
 
-    # Save the best model and update best_accuracy if applicable
-    if final_train_accuracy > best_accuracy:
-        best_accuracy = final_train_accuracy
-        best_hyperparameters = {
-            "num_epochs": num_epochs,
-            "learning_rate": learning_rate,
-            "batch_size": batch_size,
-        }
+                    final_train_accuracy = accuracies[-1]
 
-        # Save the best model if num_retrain > 1
+                    # Save the best model and update best_accuracy if applicable
+                    if final_train_accuracy > best_accuracy:
+                        best_accuracy = final_train_accuracy
+                        best_hyperparameters = {
+                            "num_epochs": num_epochs,
+                            "learning_rate": learning_rate,
+                            "batch_size": batch_size,
+                        }
 
-        best_model_filename = f"/Users/dimaermakov/models_folder/model_{best_accuracy:.2f}_{learning_rate}_{batch_size}.pth"
-        torch.save(model.state_dict(), best_model_filename)
+                        if testing != "y":
+                            best_model_filename = f"/Users/dimaermakov/models_folder/model_{best_accuracy:.2f}_{learning_rate}_{batch_size}.pth"
+                            torch.save(model.state_dict(), best_model_filename)
 
-        # Combined plot for accuracy, running loss, and validation loss vs. epoch
-        epochs = range(1, num_epochs + 1)
-        plt.figure()
-        plt.plot(epochs, accuracies, "g", label="Accuracy of Training data")
-        plt.plot(epochs, running_losses, "r", label="Loss of Training data")
-        plt.plot(epochs, val_losses, "b", label="Loss of Validation Data")
-        plt.title("Training data accuracy, running loss, and validation loss")
-        plt.xlabel("Epoch")
-        plt.ylabel("Value")
-        plt.legend(loc=0)
-        plt.tight_layout()
+                            # Combined plot for accuracy, running loss, and validation loss vs. epoch
+                            epochs = range(1, num_epochs + 1)
+                            plt.figure()
+                            plt.plot(
+                                epochs,
+                                accuracies,
+                                "g",
+                                label="Accuracy of Training data",
+                            )
+                            plt.plot(
+                                epochs,
+                                running_losses,
+                                "r",
+                                label="Loss of Training data",
+                            )
+                            plt.plot(
+                                epochs, val_losses, "b", label="Loss of Validation Data"
+                            )
+                            plt.title(
+                                "Training data accuracy, running loss, and validation loss"
+                            )
+                            plt.xlabel("Epoch")
+                            plt.ylabel("Value")
+                            plt.legend(loc=0)
+                            plt.tight_layout()
 
-        plt.savefig(
-            f"/Users/dimaermakov/Downloads/night_images/training_combined_plot_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
-        )
+                            plt.savefig(
+                                f"/Users/dimaermakov/Downloads/night_images/training_combined_plot_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
+                            )
 
-        # Save plot for accuracy vs. epoch
-        plt.figure()
-        plt.plot(range(1, num_epochs + 1), accuracies, marker="o")
-        plt.xlabel("Epoch")
-        plt.ylabel("Accuracy")
-        plt.title("Accuracy vs. Epoch")
-        plt.grid()
-        plt.tight_layout()
+                            # Save plot for accuracy vs. epoch
+                            plt.figure()
+                            plt.plot(range(1, num_epochs + 1), accuracies, marker="o")
+                            plt.xlabel("Epoch")
+                            plt.ylabel("Accuracy")
+                            plt.title("Accuracy vs. Epoch")
+                            plt.grid()
+                            plt.tight_layout()
 
-        plt.savefig(
-            f"/Users/dimaermakov/Downloads/night_images/accuracy_plot_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
-        )
+                            plt.savefig(
+                                f"/Users/dimaermakov/Downloads/night_images/accuracy_plot_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
+                            )
 
-        # Plot a grid of individual image examples
-        class_names = [
-            "Bird-drop",
-            "Clean",
-            "Dusty",
-            "Electrical-damage",
-            "Physical-Damage",
-            "Snow-Covered",
-        ]
-        num_examples = 32
-        rows = int(np.ceil(num_examples / 4))
-        plt.figure(figsize=(15, 15))
-        val_filenames = [val_dataset.samples[i][0] for i in range(len(val_dataset))]
+                            # Plot a grid of individual image examples
+                            class_names = [
+                                "Bird-drop",
+                                "Clean",
+                                "Dusty",
+                                "Electrical-damage",
+                                "Physical-Damage",
+                                "Snow-Covered",
+                            ]
+                            num_examples = 32
+                            rows = int(np.ceil(num_examples / 4))
+                            plt.figure(figsize=(15, 15))
+                            val_filenames = [
+                                val_dataset.samples[i][0]
+                                for i in range(len(val_dataset))
+                            ]
 
-        # Loop through batches of validation data to show image examples
-        for batch_idx, (images, labels) in enumerate(val_loader):
-            for i in range(min(num_examples - batch_idx * batch_size, batch_size)):
-                ax = plt.subplot(rows, 4, i + 1 + batch_idx * batch_size)
-                image = images[i].cpu().numpy().transpose(1, 2, 0)
-                image = image * [0.229, 0.224, 0.225] + [0.485, 0.456, 0.406]
-                image = np.clip(image, 0, 1)
-                plt.imshow(image)
-                plt.title("Actual: " + class_names[labels[i]])
-                plt.gca().axes.yaxis.set_ticklabels([])
-                plt.gca().axes.xaxis.set_ticklabels([])
-                start_index = batch_idx * batch_size
-                filenames = val_filenames[start_index + i : start_index + i + 1]
-                for filename in filenames:
-                    plt.xlabel(os.path.basename(filename))
-                with torch.no_grad():
-                    model.eval()
-                    inputs = images[i].unsqueeze(0).to(device)
-                    outputs = model(inputs)
-                    _, predicted_class = torch.max(outputs, 1)
-                    class_index = predicted_class.item()
-                    predicted_class_name = class_names[class_index]
+                            # Loop through batches of validation data to show image examples
+                            for batch_idx, (images, labels) in enumerate(val_loader):
+                                for i in range(
+                                    min(
+                                        num_examples - batch_idx * batch_size,
+                                        batch_size,
+                                    )
+                                ):
+                                    ax = plt.subplot(
+                                        rows, 4, i + 1 + batch_idx * batch_size
+                                    )
+                                    image = images[i].cpu().numpy().transpose(1, 2, 0)
+                                    image = image * [0.229, 0.224, 0.225] + [
+                                        0.485,
+                                        0.456,
+                                        0.406,
+                                    ]
+                                    image = np.clip(image, 0, 1)
+                                    plt.imshow(image)
+                                    plt.title("Actual: " + class_names[labels[i]])
+                                    plt.gca().axes.yaxis.set_ticklabels([])
+                                    plt.gca().axes.xaxis.set_ticklabels([])
+                                    start_index = batch_idx * batch_size
+                                    filenames = val_filenames[
+                                        start_index + i : start_index + i + 1
+                                    ]
+                                    for filename in filenames:
+                                        plt.xlabel(os.path.basename(filename))
+                                    with torch.no_grad():
+                                        model.eval()
+                                        inputs = images[i].unsqueeze(0).to(device)
+                                        outputs = model(inputs)
+                                        _, predicted_class = torch.max(outputs, 1)
+                                        class_index = predicted_class.item()
+                                        predicted_class_name = class_names[class_index]
 
-                color = (
-                    "green" if class_names[labels[i]] == predicted_class_name else "red"
-                )
-                plt.ylabel(
-                    "Predicted: " + predicted_class_name, fontdict={"color": color}
-                )
+                                    color = (
+                                        "green"
+                                        if class_names[labels[i]]
+                                        == predicted_class_name
+                                        else "red"
+                                    )
+                                    plt.ylabel(
+                                        "Predicted: " + predicted_class_name,
+                                        fontdict={"color": color},
+                                    )
 
-                if batch_idx * batch_size + i >= num_examples - 1:
-                    break
+                                    if batch_idx * batch_size + i >= num_examples - 1:
+                                        break
 
-        plt.tight_layout()
+                            plt.tight_layout()
 
-        plt.savefig(
-            f"/Users/dimaermakov/Downloads/night_images/image_examples_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
-        )
+                            plt.savefig(
+                                f"/Users/dimaermakov/Downloads/night_images/image_examples_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
+                            )
 
-        # Evaluate the model on the training data and calculate the confusion matrix
-        model.eval()
-        predicted_labels = []
-        with torch.no_grad():
-            for inputs, labels in train_loader:
-                inputs = inputs.to(device)
-                outputs = model(inputs)
-                _, predicted_classes = torch.max(outputs, 1)
-                predicted_labels.extend(predicted_classes.cpu().numpy().tolist())
+                            # Evaluate the model on the training data and calculate the confusion matrix
+                            model.eval()
+                            predicted_labels = []
+                            with torch.no_grad():
+                                for inputs, labels in train_loader:
+                                    inputs = inputs.to(device)
+                                    outputs = model(inputs)
+                                    _, predicted_classes = torch.max(outputs, 1)
+                                    predicted_labels.extend(
+                                        predicted_classes.cpu().numpy().tolist()
+                                    )
 
-        true_labels = np.array(true_labels)
-        predicted_labels = np.array(predicted_labels)
+                            true_labels = np.array(true_labels)
+                            predicted_labels = np.array(predicted_labels)
 
-        conf_matrix = confusion_matrix(true_labels, predicted_labels)
-        plt.figure(figsize=(10, 8))
-        sns.heatmap(
-            conf_matrix,
-            annot=True,
-            fmt="d",
-            cmap="Blues",
-            xticklabels=train_dataset.classes,
-            yticklabels=train_dataset.classes,
-        )
-        plt.xlabel("Predicted")
-        plt.ylabel("True")
-        plt.title("Confusion Matrix")
-        plt.tight_layout()
+                            conf_matrix = confusion_matrix(
+                                true_labels, predicted_labels
+                            )
+                            plt.figure(figsize=(10, 8))
+                            sns.heatmap(
+                                conf_matrix,
+                                annot=True,
+                                fmt="d",
+                                cmap="Blues",
+                                xticklabels=train_dataset.classes,
+                                yticklabels=train_dataset.classes,
+                            )
+                            plt.xlabel("Predicted")
+                            plt.ylabel("True")
+                            plt.title("Confusion Matrix")
+                            plt.tight_layout()
 
-        plt.savefig(
-            f"/Users/dimaermakov/Downloads/night_images/confusion_matrix_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
-        )
+                            plt.savefig(
+                                f"/Users/dimaermakov/Downloads/night_images/confusion_matrix_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
+                            )
 
-# Print best model and accuracy after all retraining iterations (if applicable)
-print(f"Best model saved successfully as {best_model_filename}.")
-print(f"Best accuracy achieved: {best_accuracy:.2f}_{learning_rate}_{batch_size}%.")
-print("Best Hyperparameters:", best_hyperparameters)
+                # Print best model and accuracy after all retraining iterations (if applicable)
+                print(f"Best model saved successfully as {best_model_filename}.")
+                print(f"Best accuracy achieved: {best_accuracy:.2f}%.")
+                print("Best Hyperparameters:", best_hyperparameters)
 
 # Put the computer to sleep after 5 seconds (only for last retraining iteration)
-
-os.system("sleep 5 && pmset sleepnow")
+if testing == "y":
+    os.system(
+        'osascript -e \'display notification "Your program is done running" with title "Program Finished"\''
+    )
+else:
+    os.system("sleep 5 && pmset sleepnow")
