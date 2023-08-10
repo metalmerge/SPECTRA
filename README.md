@@ -14,15 +14,17 @@ CGP GREY = <https://www.youtube.com/watch?v=R9OHn5ZF4Uo&list=TLPQMDIwODIwMjMlLYR
 Dataset provider: AFROZ = <https://www.kaggle.com/datasets/pythonafroz/solar-panel-images?resource=download>
 Date Augmentation Code Provider: <https://github.com/4uiiurz1/pytorch-auto-augment>
 Slideshow: <https://docs.google.com/presentation/d/1IXOd_GW-kwU6aTCM0LoaoZ81ocGVX3JAraltOzfqTIQ/edit?usp=sharing>
-@misc{ solarpanelai_dataset,
-    title = { SolarPanelAI Dataset },
+@misc{ solar-panels-fqm6k_dataset,
+    title = { solar panels Dataset },
     type = { Open Source Dataset },
-    author = { Bursa Uluda niversitesi },
-    howpublished = { \url{ https://universe.roboflow.com/bursa-uluda-niversitesi/solarpanelai } },
-    url = { https://universe.roboflow.com/bursa-uluda-niversitesi/solarpanelai },
+    author = { new-workspace-nyndu },
+    howpublished = { \url{ https://universe.roboflow.com/new-workspace-nyndu/solar-panels-fqm6k } },
+    url = { https://universe.roboflow.com/new-workspace-nyndu/solar-panels-fqm6k },
     journal = { Roboflow Universe },
     publisher = { Roboflow },
-    year = { 2023 },
-    month = { mar },
-    note = { visited on 2023-08-09 },
+    year = { 2022 },
+    month = { jun },
+    note = { visited on 2023-08-10 },
 }
+
+Drone Footage: <https://www.youtube.com/watch?v=S7_TAve5aNw&t=435s>

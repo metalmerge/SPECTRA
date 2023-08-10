@@ -1,83 +1,72 @@
 from ultralytics import YOLO
 from PIL import Image
 import cv2
-import torch
-
-# Load a model
-model = YOLO("yolov8n.yaml")  # build a new model from YAML
-model = YOLO("yolov8n.pt")  # load a pretrained model (recommended for training)
-model = YOLO("yolov8n.yaml").load("yolov8n.pt")  # build from YAML and transfer weights
-# best_path = '/Users/dimaermakov/SPECTRA/runs/detect/train3/weights/best.pt'
-# model = YOLO(best_path)  # load a custom model
 
 
-# TODO:
-# figure out imgsz
-#edit video
-#make this possible on front end
+def train_model(epoch_num):
+    model = YOLO("yolov8n.yaml").load("yolov8n.pt")  # Load pretrained model
+    model.train(
+        data="/Users/dimaermakov/Downloads/SolarPanels.2738.yolov8/data.yaml",
+        epochs=epoch_num,
+        patience=max(1, round(epoch_num / 6)),
+        imgsz=640,
+        device="cpu",
+        verbose=True,
+        project="SPECTRA_YOLOv8",
+        name=f"model_{epoch_num}",
+        weight_decay=0.0005,
+    )
 
-# Train the model
-test = model.train(
-    data="/Users/dimaermakov/Downloads/SolarPanelAI.v1i.yolov8/data.yaml",
-    epochs=36,
-    patience=10,
-    imgsz=640,
-    verbose=True,
-    device="cpu",
-    weight_decay=0.0005,
-)
-
-
-
-# Validate the model
-# results = model(['/Users/dimaermakov/Downloads/SolarPanelAI.v1i.yolov8/test/images/82_jpeg.rf.777821a1868148596a8cafa2cc4d7193.jpg', '/Users/dimaermakov/Downloads/Solar Panel.v1-solardataset.yolov8/test/images/Thermal_Solar_508_jpg.rf.c982e0e42970e383ccd77c8d4fa36f86.jpg'])  # results list
-# metrics = model.val()  # no arguments needed, dataset and settings remembered
-# metrics.box.map    # map50-95
-# metrics.box.map50  # map50
-# metrics.box.map75  # map75
-# metrics.box.maps   # a list contains map50-95 of each category
-
-# Show the results
-# for r in results:
-#     im_array = r.plot()  # plot a BGR numpy array of predictions
-#     im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
-#     im.show()  # show image
-#     im.save('results.jpg')  # save image
-# print(r.boxes,r.boxes.xyxy, r.probs)
+    return model
 
 
-# Run inference on the source
-# video_path = "/Users/dimaermakov/Downloads/videoplayback (1).webm"
-# cap = cv2.VideoCapture(video_path)
-
-# Loop through the video frames
-# while cap.isOpened():
-#     # Read a frame from the video
-#     success, frame = cap.read()
-
-#     if success:
-#         # Run YOLOv8 inference on the frame
-#         results = model(frame)
-
-#         # Visualize the results on the frame
-#         annotated_frame = results[0].plot()
-
-#         # Display the annotated frame
-#         cv2.imshow("YOLOv8 Inference", annotated_frame)
-
-#         # Break the loop if 'q' is pressed
-#         if cv2.waitKey(1) & 0xFF == ord("q"):
-#             break
-#     else:
-#         # Break the loop if the end of the video is reached
-#         break
-
-# # Release the video capture object and close the display window
-# cap.release()
-# cv2.destroyAllWindows()
+def validate_and_visualize(model, image_array):
+    results = model(image_array)  # Run validation
+    for r in results:
+        im_array = r.plot()  # Plot predictions
+        im = Image.fromarray(im_array[..., ::-1])  # Convert to RGB PIL image
+        im.show()  # Show image
 
 
+def infer_on_video(model, video_path):
+    cap = cv2.VideoCapture(video_path)
+    while cap.isOpened():
+        success, frame = cap.read()
+        if success:
+            results = model(frame)  # Run inference on the frame
+            annotated_frame = results[0].plot()  # Visualize results
+            cv2.imshow("YOLOv8 Inference", annotated_frame)
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+        else:
+            break
+    cap.release()
+    cv2.destroyAllWindows()
 
 
-model.export(format="onnx")
-# torch.save(model, "infrared_model.pth")
+def main():
+    best_path = "/Users/dimaermakov/SPECTRA/runs/detect/493_run/weights/best.pt"
+    train = int(input("Number of epochs: "))
+
+    if train > 0:
+        model = train_model(train)
+        model.export(format="onnx")
+        # torch.save(model, "infrared_model.pth")
+
+    elif train == 0:
+        model = YOLO(best_path)  # Load custom model
+
+        image_array = [
+            "/Users/dimaermakov/Downloads/SolarPanelAI.493.yolov8/test/images/468_jpeg.rf.7907654da74862b08c65c83f2f58e689.jpg",
+"/Users/dimaermakov/Downloads/SolarPanelAI.493.yolov8/test/images/50_jpeg.rf.a9237d9b3e87abdb25df228965a27c21.jpg",
+"/Users/dimaermakov/Downloads/SolarPanelAI.493.yolov8/test/images/56_jpeg.rf.78d9bdd3d8c01bf317b29cea45e36812.jpg",
+"/Users/dimaermakov/Downloads/SolarPanelAI.493.yolov8/test/images/82_jpeg.rf.777821a1868148596a8cafa2cc4d7193.jpg",
+"/Users/dimaermakov/Downloads/SolarPanelAI.493.yolov8/test/images/96_jpeg.rf.c2a6093ac882077421dc534bca4330c6.jpg",        ]
+        validate_and_visualize(model, image_array)
+
+        video_path = "/Users/dimaermakov/Downloads/Thermography Solar Panel Video.mp4"
+        # infer_on_video(model, video_path)
+
+
+if __name__ == "__main__":
+    main()
