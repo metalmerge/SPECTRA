@@ -11,15 +11,29 @@ Sebastian-Schuchmann = <https://youtu.be/k1GIEkzQ8qc>
 CGP GREY = <https://www.youtube.com/watch?v=R9OHn5ZF4Uo&list=TLPQMDIwODIwMjMlLYRa6llhZw&index=1>
 3Blue1Brown = <https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi>
 
-Dataset provider: AFROZ = <https://www.kaggle.com/datasets/pythonafroz/solar-panel-images?resource=download>
+RGB Dataset Provider: AFROZ = <https://www.kaggle.com/datasets/pythonafroz/solar-panel-images?resource=download>
 Date Augmentation Code Provider: <https://github.com/4uiiurz1/pytorch-auto-augment>
 Slideshow: <https://docs.google.com/presentation/d/1IXOd_GW-kwU6aTCM0LoaoZ81ocGVX3JAraltOzfqTIQ/edit?usp=sharing>
+First Thermal Dataset provider:
+@misc{ solarpanelai_dataset,
+    title = { SolarPanelAI Dataset },
+    type = { Open Source Dataset },
+    author = { Bursa Uluda niversitesi },
+    howpublished = { \url{ <https://universe.roboflow.com/bursa-uluda-niversitesi/solarpanelai> } },
+    url = { <https://universe.roboflow.com/bursa-uluda-niversitesi/solarpanelai> },
+    journal = { Roboflow Universe },
+    publisher = { Roboflow },
+    year = { 2023 },
+    month = { mar },
+    note = { visited on 2023-08-10 },
+}
+Second Thermal Dataset provider:
 @misc{ solar-panels-fqm6k_dataset,
     title = { solar panels Dataset },
     type = { Open Source Dataset },
     author = { new-workspace-nyndu },
-    howpublished = { \url{ https://universe.roboflow.com/new-workspace-nyndu/solar-panels-fqm6k } },
-    url = { https://universe.roboflow.com/new-workspace-nyndu/solar-panels-fqm6k },
+    howpublished = { \url{ <https://universe.roboflow.com/new-workspace-nyndu/solar-panels-fqm6k> } },
+    url = { <https://universe.roboflow.com/new-workspace-nyndu/solar-panels-fqm6k> },
     journal = { Roboflow Universe },
     publisher = { Roboflow },
     year = { 2022 },
