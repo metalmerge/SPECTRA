@@ -33,4 +33,4 @@ This project owes its success to the invaluable contributions of various individ
      - Published in 2022, June
 
 7. **Drone Footage:**
-   - [Watch Drone Footage](https://www.youtube.com/watch?v=S7_TAve5aNw&t=435s)
+   - [The Drone Life](https://www.youtube.com/watch?v=S7_TAve5aNw&t=435s)
