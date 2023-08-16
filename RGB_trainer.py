@@ -63,12 +63,6 @@ for retrain_index in range(num_retrain):
                             (224, 224)
                         ),  # Resize images to (224, 224) before augmentations
                         AutoAugment(),
-                        transforms.ToTensor(),  # Convert the image to a PyTorch tensor
-                        transforms.Normalize(
-                            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                        ),  # Normalize the image with mean and standard deviation
-                    ]
-                )
                         # transforms.RandomHorizontalFlip(),  # Randomly flip the image horizontally with a probability of 0.5
                         # transforms.RandomVerticalFlip(),  # Randomly flip the image vertically with a probability of 0.5
                         # transforms.RandomRotation(
@@ -85,6 +79,12 @@ for retrain_index in range(num_retrain):
                         # transforms.RandomAffine(
                         #     degrees=10, translate=(0.1, 0.1), scale=(0.8, 1.2)
                         # ), 
+                        transforms.ToTensor(),  # Convert the image to a PyTorch tensor
+                        transforms.Normalize(
+                            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                        ),  # Normalize the image with mean and standard deviation
+                    ]
+                )
 
                 # Load the training and validation datasets
                 data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Train"

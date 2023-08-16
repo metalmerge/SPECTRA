@@ -1,44 +1,36 @@
-# SPECTRA
+# SPECTRA: Enhancing Solar Panel Evaluation through Computer Vision and Advanced Techniques
 
-Solar Panel Evaluation through Computer Vision and Advanced Techniques for Reliable Analysis
+**Project Overview:**
 
-The research project, Solar Panel Evaluation through Computer Vision and Advanced Techniques for Reliable Analysis or SPECTRA for short, aims to automate the assessment of solar panel performance using computer vision algorithms and advanced analytics. By developing a custom image processing pipeline, the project seeks to identify issues like degradation, soiling, and damage, enabling efficient monitoring and maintenance of solar installations. Ultimately, this approach will enhance renewable energy technologies and ensure optimal efficiency and sustainability in the solar energy industry.
+The SPECTRA project, which stands for Solar Panel Evaluation through Computer Vision and Advanced Techniques, is dedicated to the automation of solar panel performance assessment. By leveraging cutting-edge computer vision algorithms and advanced analytics, SPECTRA aims to streamline the process of identifying key issues such as degradation, soiling, and damage. Through the development of a tailored image processing pipeline, this project facilitates efficient monitoring and maintenance of solar installations. Ultimately, these efforts contribute to the enhancement of renewable energy technologies, ensuring optimal efficiency and sustainability within the solar energy industry.
 
-Aknowledgements
+**Acknowledgements:**
 
-Resources for learning neural networks:
-Sebastian-Schuchmann = <https://youtu.be/k1GIEkzQ8qc>
-CGP GREY = <https://www.youtube.com/watch?v=R9OHn5ZF4Uo&list=TLPQMDIwODIwMjMlLYRa6llhZw&index=1>
-3Blue1Brown = <https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi>
+This project owes its success to the invaluable contributions of various individuals and resources. We would like to extend our gratitude to the following:
 
-RGB Dataset Provider: AFROZ = <https://www.kaggle.com/datasets/pythonafroz/solar-panel-images?resource=download>
-Date Augmentation Code Provider: <https://github.com/4uiiurz1/pytorch-auto-augment>
-Slideshow: <https://docs.google.com/presentation/d/1IXOd_GW-kwU6aTCM0LoaoZ81ocGVX3JAraltOzfqTIQ/edit?usp=sharing>
-First Thermal Dataset provider:
-@misc{ solarpanelai_dataset,
-    title = { SolarPanelAI Dataset },
-    type = { Open Source Dataset },
-    author = { Bursa Uluda niversitesi },
-    howpublished = { \url{ <https://universe.roboflow.com/bursa-uluda-niversitesi/solarpanelai> } },
-    url = { <https://universe.roboflow.com/bursa-uluda-niversitesi/solarpanelai> },
-    journal = { Roboflow Universe },
-    publisher = { Roboflow },
-    year = { 2023 },
-    month = { mar },
-    note = { visited on 2023-08-10 },
-}
-Second Thermal Dataset provider:
-@misc{ solar-panels-fqm6k_dataset,
-    title = { solar panels Dataset },
-    type = { Open Source Dataset },
-    author = { new-workspace-nyndu },
-    howpublished = { \url{ <https://universe.roboflow.com/new-workspace-nyndu/solar-panels-fqm6k> } },
-    url = { <https://universe.roboflow.com/new-workspace-nyndu/solar-panels-fqm6k> },
-    journal = { Roboflow Universe },
-    publisher = { Roboflow },
-    year = { 2022 },
-    month = { jun },
-    note = { visited on 2023-08-10 },
-}
+1. **Learning Neural Networks:**
+   - Sebastian-Schuchmann: [Watch here](https://youtu.be/k1GIEkzQ8qc)
+   - CGP GREY: [Watch here](https://www.youtube.com/watch?v=R9OHn5ZF4Uo&list=TLPQMDIwODIwMjMlLYRa6llhZw&index=1)
+   - 3Blue1Brown: [Watch here](https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
 
-Drone Footage: <https://www.youtube.com/watch?v=S7_TAve5aNw&t=435s>
+2. **RGB Dataset Provider:**
+   - AFROZ: [Access Dataset](https://www.kaggle.com/datasets/pythonafroz/solar-panel-images?resource=download)
+
+3. **Data Augmentation Code Provider:**
+   - GitHub Repository: [PyTorch Auto Augment](https://github.com/4uiiurz1/pytorch-auto-augment)
+
+4. **Slideshow:**
+   - Google Slides Presentation: [View Slideshow](https://docs.google.com/presentation/d/1IXOd_GW-kwU6aTCM0LoaoZ81ocGVX3JAraltOzfqTIQ/edit?usp=sharing)
+
+5. **First Thermal Dataset Provider:**
+   - SolarPanelAI Dataset by Bursa Uludağ Üniversitesi
+     - Source: [Roboflow Universe](https://universe.roboflow.com/bursa-uluda-niversitesi/solarpanelai)
+     - Published in 2023, March
+
+6. **Second Thermal Dataset Provider:**
+   - Solar Panels Dataset by new-workspace-nyndu
+     - Source: [Roboflow Universe](https://universe.roboflow.com/new-workspace-nyndu/solar-panels-fqm6k)
+     - Published in 2022, June
+
+7. **Drone Footage:**
+   - [Watch Drone Footage](https://www.youtube.com/watch?v=S7_TAve5aNw&t=435s)
