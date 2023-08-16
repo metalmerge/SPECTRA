@@ -83,7 +83,7 @@ def main():
 
         video_path = "/Users/dimaermakov/Downloads/Thermography Solar Panel Video.mp4"
 
-        # infer_and_save_video(model, video_path, "("/Users/dimaermakov/Downloads/output493.mp4")
+        infer_and_save_video(model, video_path, "/Users/dimaermakov/Downloads/output493.mp4")
 
 if __name__ == "__main__":
     main()
