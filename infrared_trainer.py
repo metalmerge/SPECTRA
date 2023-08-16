@@ -79,7 +79,7 @@ def main():
             "/Users/dimaermakov/Downloads/SolarPanelAI.493.yolov8/test/images/82_jpeg.rf.777821a1868148596a8cafa2cc4d7193.jpg",
             "/Users/dimaermakov/Downloads/SolarPanelAI.493.yolov8/test/images/96_jpeg.rf.c2a6093ac882077421dc534bca4330c6.jpg",
         ]
-        # validate_and_visualize(model, image_array)
+        validate_and_visualize(model, image_array)
 
         video_path = "/Users/dimaermakov/Downloads/Thermography Solar Panel Video.mp4"
 
