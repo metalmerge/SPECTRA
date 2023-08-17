@@ -1,5 +1,9 @@
 # SPECTRA: Enhancing Solar Panel Evaluation through Computer Vision and Advanced Techniques
 
+<div style="text-align:center;">
+    <img src="/Users/dimaermakov/SPECTRA/server/static/SPECTRA_with_text.png" alt="SPECTRA Image">
+</div>
+
 **Project Overview:**
 
 The SPECTRA project, which stands for Solar Panel Evaluation through Computer Vision and Advanced Techniques, is dedicated to the automation of solar panel performance assessment. By leveraging cutting-edge computer vision algorithms and advanced analytics, SPECTRA aims to streamline the process of identifying key issues such as degradation, soiling, and damage. Through the development of a tailored image processing pipeline, this project facilitates efficient monitoring and maintenance of solar installations. Ultimately, these efforts contribute to the enhancement of renewable energy technologies, ensuring optimal efficiency and sustainability within the solar energy industry.
