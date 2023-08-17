@@ -1,6 +1,9 @@
 # SPECTRA: Enhancing Solar Panel Evaluation through Computer Vision and Advanced Techniques
 
-<img src="server/static/SPECTRA_with_text.png" alt="SPECTRA Image" center>
+<div style="text-align:center;">
+    <img src="server/static/SPECTRA_with_text.png" alt="SPECTRA Image">
+</div>
+
 
 **Project Overview:**
 
