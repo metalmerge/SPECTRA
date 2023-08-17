@@ -78,7 +78,7 @@ for retrain_index in range(num_retrain):
                         # ),  # Stronger perspective transformation with a probability of 0.1
                         # transforms.RandomAffine(
                         #     degrees=10, translate=(0.1, 0.1), scale=(0.8, 1.2)
-                        # ), 
+                        # ),
                         transforms.ToTensor(),  # Convert the image to a PyTorch tensor
                         transforms.Normalize(
                             mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
