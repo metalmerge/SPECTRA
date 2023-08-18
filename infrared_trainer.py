@@ -4,15 +4,14 @@ from PIL import Image
 import cv2
 import os
 
-#TODO:
-#This is the path for the data.yaml file, change this path to the path of the data.yaml file you want to use.
-YAML_PATH = "SolarPanelAI.1485.yolov8/data.yaml"
-#This is the path for when you train a model, change this path to the path of the best.pt file. It will be in the weights subfolder that is generated when the training is done.
-best_pt_model_path = "best.pt"
-#This is the path for the testing image folder, change this path to the path of the testing image folder you want to use.
-test_image_folder = "SolarPanelAI.1485.yolov8/test/images"
-#This is the path for the testing video file, change this path to the path of the testing video file you want to use.
-test_video_path = "Thermography Solar Panel Video.mp4"
+# TODO: Specify the path for the data.yaml file containing configuration
+YAML_PATH = "path_to_your_data.yaml"
+# TODO: Specify the path for the trained model file generated after training
+best_pt_model_path = "path_to_best.pt"
+# TODO: Specify the path for the testing image folder
+test_image_folder = "path_to_your_testing_image_folder"
+# TODO: Specify the path for the testing video file
+test_video_path = "path_to_your_testing_video_file"
 
 def train_model(epoch_num):
     model = YOLO("yolov8n.yaml").load("yolov8n.pt")  # Load pretrained model

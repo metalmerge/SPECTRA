@@ -27,9 +27,8 @@ num_classes = 6  # Replace this with the number of classes in your dataset
 in_features = model.fc.in_features
 model.fc = nn.Linear(in_features, num_classes)
 
-#TODO:
-# Replace 'model_97.11.pth' with the name of your model file that you trained with RGB_trainer.py
-model_filename = "model_97.11.pth"
+# TODO: Specify the path for the trained model obtained from RGB_trainer.py
+model_filename = "your_trained_model.pth"
 
 model.load_state_dict(torch.load(model_filename, map_location=device))
 model.to(device)

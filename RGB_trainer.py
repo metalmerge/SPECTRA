@@ -16,11 +16,10 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import confusion_matrix
 from torchvision import datasets, transforms, models
 
-#TODO:
-#This is the path for the training dataset folder, change this path to the path of the training dataset folder you want to use.
-training_dataset_path = "Faulty_solar_panel_Train"
-#This is the path for the validation dataset folder, change this path to the path of the validation dataset folder you want to use.
-validation_dataset_path = "Faulty_solar_panel_Validation"
+# TODO: Specify the path for the training dataset folder
+training_dataset_path = "path_to_your_training_dataset_folder"
+# TODO: Specify the path for the validation dataset folder
+validation_dataset_path = "path_to_your_validation_dataset_folder"
 
 # User input: Number of times to retrain the model
 num_retrain = int(input("How many times do you want to retrain the model? "))
