@@ -27,8 +27,8 @@ num_classes = 6  # Replace this with the number of classes in your dataset
 in_features = model.fc.in_features
 model.fc = nn.Linear(in_features, num_classes)
 
-model_filename = "/Users/dimaermakov/models_folder/model_97.11.pth"
-# model_filename = "/Users/dimaermakov/models_folder/model_92.35.pth"
+model_filename = "SPECTRA_zip_files/model_97.11.pth"
+
 model.load_state_dict(torch.load(model_filename, map_location=device))
 model.to(device)
 model.eval()
@@ -36,11 +36,9 @@ model.eval()
 app = Flask(__name__, static_url_path="/static")
 cors = CORS(app)
 
-
 @app.route("/")
 def upload():
     return render_template("index.html")
-
 
 @app.route("/predict", methods=["GET", "POST"])
 def predict():

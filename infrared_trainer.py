@@ -3,12 +3,15 @@ from ultralytics import YOLO
 from PIL import Image
 import cv2
 import os
-
+YAML_PATH = "SPECTRA_zip_files/SolarPanelAI.493.yolov8/data.yaml"
+best_pt_model_path = "SPECTRA_zip_files/best.pt"
+test_image_folder = "SPECTRA_zip_files/SolarPanelAI.493.yolov8/test/images"
+test_video_path = "SPECTRA_zip_files/Thermography Solar Panel Video.mp4"
 
 def train_model(epoch_num):
     model = YOLO("yolov8n.yaml").load("yolov8n.pt")  # Load pretrained model
     model.train(
-        data="/Users/dimaermakov/Downloads/SolarPanelAI.493.yolov8/data.yaml",
+        data=YAML_PATH,
         epochs=epoch_num,
         patience=max(1, round(epoch_num / 6)),
         imgsz=640,
@@ -67,7 +70,6 @@ def infer_and_save_video(model, video_path, output_path):
 
 
 def main():
-    best_path = "/Users/dimaermakov/SPECTRA/runs/detect/493_run/weights/best.pt"
     train = int(input("Number of epochs: "))
 
     if train > 0:
@@ -76,16 +78,12 @@ def main():
         os.system("sleep 5 && pmset sleepnow")
 
     elif train == 0:
-        model = YOLO(best_path)  # Load custom model
+        model = YOLO(best_pt_model_path)  # Load custom model
 
-        image_folder = (
-            "/Users/dimaermakov/Downloads/SolarPanelAI.493.yolov8/test/images"
-        )
-        validate_and_visualize(model, image_folder)
+        validate_and_visualize(model, test_image_folder)
 
-        video_path = "/Users/dimaermakov/Downloads/Thermography Solar Panel Video.mp4"
         infer_and_save_video(
-            model, video_path, "/Users/dimaermakov/Downloads/output493.mp4"
+            model, test_video_path, "output.mp4"
         )
 
 

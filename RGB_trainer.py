@@ -16,6 +16,9 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import confusion_matrix
 from torchvision import datasets, transforms, models
 
+validation_dataset_path = "SPECTRA_zip_files/Faulty_solar_panel_Validation"
+training_dataset_path = "SPECTRA_zip_files/Faulty_solar_panel_Train"
+
 # User input: Number of times to retrain the model
 num_retrain = int(input("How many times do you want to retrain the model? "))
 testing = input("Is this a test run? (y/n) ").lower()
@@ -88,13 +91,8 @@ for retrain_index in range(num_retrain):
                 )
 
                 # Load the training and validation datasets
-                data_path = "/Users/dimaermakov/Downloads/Faulty_solar_panel_Train"
-                train_dataset = datasets.ImageFolder(data_path, transform=transform)
-
-                val_data_path = (
-                    "/Users/dimaermakov/Downloads/Faulty_solar_panel_Validation"
-                )
-                val_dataset = datasets.ImageFolder(val_data_path, transform=transform)
+                train_dataset = datasets.ImageFolder(training_dataset_path, transform=transform)
+                val_dataset = datasets.ImageFolder(validation_dataset_path, transform=transform)
 
                 # Create data loaders to efficiently process batches of data during training and evaluation
                 train_loader = DataLoader(
@@ -242,7 +240,7 @@ for retrain_index in range(num_retrain):
                         }
 
                         if testing != "y":
-                            best_model_filename = f"/Users/dimaermakov/models_folder/model_{best_accuracy:.2f}_{learning_rate}_{batch_size}.pth"
+                            best_model_filename = f"model_{best_accuracy:.2f}_{learning_rate}_{batch_size}.pth"
                             torch.save(model.state_dict(), best_model_filename)
 
                             # Combined plot for accuracy, running loss, and validation loss vs. epoch
@@ -272,7 +270,7 @@ for retrain_index in range(num_retrain):
                             plt.tight_layout()
 
                             plt.savefig(
-                                f"/Users/dimaermakov/Downloads/night_images/training_combined_plot_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
+                                f"training_combined_plot_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
                             )
 
                             # Save plot for accuracy vs. epoch
@@ -285,7 +283,7 @@ for retrain_index in range(num_retrain):
                             plt.tight_layout()
 
                             plt.savefig(
-                                f"/Users/dimaermakov/Downloads/night_images/accuracy_plot_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
+                                f"accuracy_plot_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
                             )
 
                             # Plot a grid of individual image examples
@@ -358,7 +356,7 @@ for retrain_index in range(num_retrain):
                             plt.tight_layout()
 
                             plt.savefig(
-                                f"/Users/dimaermakov/Downloads/night_images/image_examples_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
+                                f"image_examples_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
                             )
 
                             # Evaluate the model on the training data and calculate the confusion matrix
@@ -394,7 +392,7 @@ for retrain_index in range(num_retrain):
                             plt.tight_layout()
 
                             plt.savefig(
-                                f"/Users/dimaermakov/Downloads/night_images/confusion_matrix_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
+                                f"confusion_matrix_{best_accuracy:.2f}_{learning_rate}_{batch_size}.png"
                             )
 
                 # Print best model and accuracy after all retraining iterations (if applicable)
