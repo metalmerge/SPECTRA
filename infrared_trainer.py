@@ -1,3 +1,4 @@
+# Author: metalmerge
 from ultralytics import YOLO
 from PIL import Image
 import cv2
@@ -67,7 +68,6 @@ def infer_and_save_video(model, video_path, output_path):
 
 def main():
     best_path = "/Users/dimaermakov/SPECTRA/runs/detect/493_run/weights/best.pt"
-    # best_path = "/Users/dimaermakov/SPECTRA/SPECTRA_YOLOv8/model_300/weights/best.pt"
     train = int(input("Number of epochs: "))
 
     if train > 0:
@@ -84,7 +84,6 @@ def main():
         validate_and_visualize(model, image_folder)
 
         video_path = "/Users/dimaermakov/Downloads/Thermography Solar Panel Video.mp4"
-
         infer_and_save_video(
             model, video_path, "/Users/dimaermakov/Downloads/output493.mp4"
         )
