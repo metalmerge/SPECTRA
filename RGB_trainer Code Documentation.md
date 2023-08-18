@@ -1,57 +1,62 @@
-# Faulty Solar Panel Classifier Training Script
+# Code Documentation
 
 ## Author: metalmerge
 
-## Estimated Training Time: 136.62 minutes
+This script performs training and evaluation of a deep learning model using PyTorch's ResNet50 architecture for image classification. The script includes data loading, data augmentation, model training, early stopping, evaluation, and visualization of results.
 
-This script trains a deep learning model to classify images of faulty solar panels. It uses the ResNet50 architecture with pre-trained weights from ImageNet and applies various hyperparameters to find the best model.
+### Libraries Used
 
-### Importing Required Libraries
+- `os`: The operating system interface, used for file operations.
+- `ssl`: Used to disable SSL verification for downloading data.
+- `time`: Used for timing the execution.
+- `torch`: The PyTorch deep learning framework.
+- `numpy`: Used for numerical operations.
+- `seaborn`: Used for creating visualizations.
+- `torch.nn`: Contains various neural network layers, loss functions, etc.
+- `torch.optim`: Contains optimization algorithms.
+- `matplotlib.pyplot`: Used for creating plots.
+- `torch.optim.lr_scheduler`: Contains learning rate schedulers.
+- `PIL`: The Python Imaging Library, used for opening and manipulating images.
+- `auto_augment`: Custom module for image augmentation.
+- `torch.utils.data.DataLoader`: Used for loading data efficiently.
+- `sklearn.metrics`: Contains confusion matrix for evaluation.
+- `torchvision.datasets`: Contains standard datasets for vision tasks.
+- `torchvision.transforms`: Contains data transformations.
 
-The script begins by importing necessary libraries for data manipulation, deep learning, and visualization.
+### Variables
 
-### User Input
+- `validation_dataset_path`: Path to the validation dataset.
+- `training_dataset_path`: Path to the training dataset.
+- `num_retrain`: Number of times to retrain the model.
+- `testing`: Indicates whether this is a test run (`"y"` or `"n"`).
+- Various hyperparameter values and settings for model training.
 
-The script prompts the user for the number of times to retrain the model and whether it's a test run. The user's input determines the number of epochs, learning rates, and batch sizes to be tested.
+### Functions and Execution
 
-### Hyperparameters Setup
+1. The script prompts the user for the number of times to retrain the model (`num_retrain`) and whether it's a test run (`testing`).
 
-Hyperparameters are defined based on user input. The script includes options for a test run with fewer iterations and specific values for faster testing.
+2. Based on the test run status, the script defines hyperparameter values for number of epochs, learning rate, and batch size.
 
-### Model Training Loop
+3. The script enters a loop for retraining iterations. Within each iteration:
+   - Hyperparameters for training are set based on iteration values.
+   - Data transformations are defined using `transforms.Compose`.
+   - Training and validation datasets are loaded using `datasets.ImageFolder`.
+   - The base model (ResNet50) is loaded with pre-trained weights from ImageNet.
+   - Model training loop is executed, including loss computation, optimization, and early stopping based on validation loss.
+   - Various statistics and visualizations are generated for analysis.
 
-The script iterates through different hyperparameters combinations for multiple retraining iterations. Within each iteration, the model trains for a specified number of epochs with varying learning rates and batch sizes. The training loop includes the following steps:
+4. The best model and corresponding statistics are printed after all retraining iterations.
 
-1. Device Selection: Selects GPU if available, otherwise uses CPU.
-2. Data Transformations: Defines data transformations including resizing, AutoAugment, and normalization.
-3. Data Loading: Loads training and validation datasets using `torchvision.datasets.ImageFolder`.
-4. Model Initialization: Loads a ResNet50 model with pre-trained weights and modifies the output layer for the number of classes.
-5. Model Transfer: Moves the model to the selected device.
-6. Loss and Optimizer: Defines the loss function (CrossEntropyLoss) and optimizer (Adam).
-7. Learning Rate Scheduler: Sets up a scheduler to reduce learning rate during training.
-8. Training Loop: Iterates through training batches, computes losses, performs backpropagation, and updates model parameters.
-9. Validation Loss: Calculates validation loss at the end of each epoch.
-10. Early Stopping: Monitors validation loss for early stopping if improvement stalls.
-11. Learning Rate Scheduling: Updates the learning rate using the scheduler.
-12. Training Metrics: Tracks training accuracy, loss, and validation loss.
-13. Model Evaluation: Evaluates the model on validation data and saves best model and accuracy.
+5. If `testing` is `"y"`, a system notification is displayed. Otherwise, the script puts the computer to sleep after 5 seconds.
 
-### Result Visualization
+### Usage
 
-After training iterations are complete, the script visualizes the results:
+1. Run the script in a Python environment.
+2. Follow the prompts to provide retraining iterations and test run status.
+3. The script will perform model training, evaluation, and visualization.
 
-1. Accuracy, Running Loss, and Validation Loss Plot: Plots accuracy and losses over epochs.
-2. Accuracy vs. Epoch Plot: Displays accuracy trend over epochs.
-3. Image Examples: Plots a grid of image examples from the validation set.
-4. Confusion Matrix: Generates and displays the confusion matrix based on model predictions.
-5. Final Best Model and Accuracy: Prints the best model filename and highest achieved accuracy along with the corresponding hyperparameters.
+## Note
 
-### Script Completion
-
-If it's a test run, the script displays a notification. Otherwise, it puts the computer to sleep after a 5-second delay.
-
-## Conclusion
-
-This script automates the process of training a deep learning model for classifying faulty solar panels. By systematically varying hyperparameters, the script identifies the best model configuration for the given task.
-
-**Note:** Ensure that the necessary libraries (`torch`, `numpy`, `seaborn`, `PIL`, `auto_augment`, etc.) are installed before running the script.
+- This script assumes that you have the required datasets in the specified paths.
+- Make sure to have the necessary libraries (`os`, `ssl`, `time`, `torch`, `numpy`, `seaborn`, `matplotlib`, `PIL`, `auto_augment`, `sklearn`, `torchvision`) installed in your environment.
+- Adjust the script as needed for your specific dataset and hyperparameters.

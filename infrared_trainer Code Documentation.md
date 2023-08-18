@@ -1,54 +1,60 @@
-# YOLOv8 Solar Panel Detection Script
+# Code Documentation
 
 ## Author: metalmerge
 
-This script utilizes the YOLOv8 object detection model to detect solar panels in images and videos. It provides functionality for training the model, validating on images, and performing inference on videos.
+This script performs various tasks related to object detection using the YOLOv8 model from the `ultralytics` library. It includes functions to train the model, validate and visualize its predictions on images, and perform inference on a video stream.
 
-## Dependencies
+### Libraries Used
 
-Ensure you have the following dependencies installed before running the script:
+- `ultralytics`: A deep learning library that provides implementations for various computer vision tasks, including object detection.
+- `PIL`: The Python Imaging Library, used for opening and manipulating images.
+- `cv2`: OpenCV, a computer vision library, used for video capture, processing, and display.
+- `os`: The operating system interface, used for file operations.
 
-- `ultralytics`: Library for YOLO model training and inference
-- `PIL`: Python Imaging Library for image processing
-- `cv2`: OpenCV library for image and video processing
-- `os`: Python standard library for interacting with the operating system
+### Variables
 
-## Training Model
+- `YAML_PATH`: Path to the YAML configuration file for model training.
+- `best_pt_model_path`: Path to the pre-trained model checkpoint.
+- `test_image_folder`: Path to the folder containing test images.
+- `test_video_path`: Path to the input video file for inference.
 
-The `train_model` function loads a pretrained YOLOv8 model, trains it on solar panel detection data, and saves the trained model. It takes the number of epochs as input and utilizes the following parameters:
+### Functions
 
-- `data`: Path to the data configuration file
-- `epochs`: Number of training epochs
-- `patience`: Early stopping patience
-- `imgsz`: Input image size
-- `device`: Device to run the training on ("cpu" or "cuda")
-- `verbose`: Print training progress
-- `project`: Project name
-- `name`: Model name
-- `weight_decay`: L2 regularization strength
+1. `train_model(epoch_num)`: Trains the YOLOv8 model for a specified number of epochs.
 
-## Validating and Visualizing
+   - `epoch_num`: Number of epochs for training.
+   - Returns: Trained YOLOv8 model.
 
-The `validate_and_visualize` function takes a trained model and an array of image paths, runs inference on the images, and visualizes the detection results using PIL. Detected bounding boxes are plotted on the images.
+2. `validate_and_visualize(model, image_folder)`: Validates the model's predictions on images and visualizes the results.
 
-## Inferring and Saving Video
+   - `model`: Trained YOLOv8 model.
+   - `image_folder`: Folder containing images for validation.
 
-The `infer_and_save_video` function performs inference on a video file, annotates the frames with bounding boxes, and saves the annotated video. It takes the paths to the input video and the output video as inputs.
+3. `infer_and_save_video(model, video_path, output_path)`: Performs inference on a video stream and saves the annotated video.
 
-## Main Function
+   - `model`: Trained YOLOv8 model.
+   - `video_path`: Path to the input video file.
+   - `output_path`: Path to save the annotated output video.
 
-The `main` function is the entry point of the script. It offers two modes of operation based on user input:
+4. `main()`: Main function that drives the script's execution.
 
-1. Training Mode: Prompts the user for the number of epochs to train the model. After training, it exports the model in ONNX format and puts the computer to sleep.
-2. Inference Mode: Loads a trained model, runs inference on sample images, and performs video inference.
+### Execution
 
-## Usage
+1. The script starts by prompting the user for the number of epochs to train the model. If `train > 0`, the script trains the model, exports it in ONNX format, and puts the system to sleep after a delay.
 
-1. Ensure the required dependencies are installed.
-2. Run the script. If you want to train the model, enter the number of epochs when prompted. If you want to perform inference on images and videos, select a sample mode.
+2. If `train == 0`, the script loads a custom model checkpoint and performs the following steps:
+   - Validates and visualizes the model's predictions on test images.
+   - Performs inference on the specified video file, annotates each frame, and saves the annotated video.
 
-## Conclusion
+3. The script uses the `__name__` check to ensure that it's being run as the main module before executing the `main()` function.
 
-This script demonstrates the use of the YOLOv8 model for solar panel detection. It provides options for training the model and performing inference on images and videos. The script's flexibility allows users to adapt it to their specific object detection tasks.
+### Usage
 
-**Note:** Make sure to replace the file paths with your actual paths and adjust other settings as needed for your environment and dataset.
+1. Run the script in a Python environment.
+2. Follow the prompts to specify the number of epochs for training or choose to perform inference on test images and a video.
+3. The script will display validation images with annotations and save an annotated video if applicable.
+
+## Note
+
+- This script assumes that you have the required image and video files in the specified paths.
+- Make sure to have the necessary libraries (`ultralytics`, `PIL`, `cv2`) installed in your environment.
